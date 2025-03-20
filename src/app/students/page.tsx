@@ -13,9 +13,9 @@ import ApplicationForm from '@/components/students/ApplicationForm';
  * 学生向けページコンポーネント
  * 学生が高校への応募情報を管理するページ
  */
-export default function StudentsPage() {
-  // 学生ID（実際のアプリでは認証から取得）
-  const studentId = 1;
+export default function StudentsPage({ params }: { params: { id?: string } }) {
+  // URLパスからIDを取得（指定がない場合は1をデフォルト値として使用）
+  const studentId = params.id ? Number(params.id) : 1;
 
   // 状態管理
   const [applications, setApplications] = useState<Application[]>([]);

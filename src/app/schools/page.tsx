@@ -12,9 +12,9 @@ import { School, Application, ExamResult } from '@/lib/types';
  * 高校向けページコンポーネント
  * 高校が応募状況やマッチング結果を確認するページ
  */
-export default function SchoolsPage() {
-  // 高校ID（実際のアプリでは認証から取得）
-  const schoolId = 1;
+export default function SchoolsPage({ params }: { params: { id?: string } }) {
+  // URLパスからIDを取得（指定がない場合は1をデフォルト値として使用）
+  const schoolId = params.id ? Number(params.id) : 1;
 
   // 状態管理
   const [school, setSchool] = useState<School | null>(null);
