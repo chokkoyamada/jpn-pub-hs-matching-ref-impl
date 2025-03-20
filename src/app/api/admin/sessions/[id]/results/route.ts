@@ -11,10 +11,10 @@ export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  const id = params.id;
+  const { id } = params;
+  const sessionId = Number(id);
 
   try {
-    const sessionId = Number(id);
 
     if (isNaN(sessionId)) {
       return NextResponse.json(

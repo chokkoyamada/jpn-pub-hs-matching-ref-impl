@@ -125,7 +125,6 @@ export default function AdminPage() {
     <div className="flex flex-col gap-8">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold">教育委員会向けページ</h1>
-        <Button>ログイン</Button>
       </div>
 
       <Card>
@@ -270,7 +269,9 @@ export default function AdminPage() {
                       <TableCell>{school.capacity}</TableCell>
                       <TableCell>-</TableCell>
                       <TableCell>
-                        <Button variant="outline" size="sm">編集</Button>
+                        <Link href={`/schools/${school.id}`}>
+                          <Button variant="outline" size="sm">詳細</Button>
+                        </Link>
                       </TableCell>
                     </TableRow>
                   ))
@@ -333,7 +334,9 @@ export default function AdminPage() {
                           {matchedSchool ? matchedSchool.name : '未決定'}
                         </TableCell>
                         <TableCell>
-                          <Button variant="outline" size="sm">詳細</Button>
+                          <Link href={`/students/${student.id}`}>
+                            <Button variant="outline" size="sm">詳細</Button>
+                          </Link>
                         </TableCell>
                       </TableRow>
                     );

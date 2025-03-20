@@ -11,10 +11,10 @@ export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  const id = params.id;
+  const { id } = params;
+  const schoolId = Number(id);
 
   try {
-    const schoolId = Number(id);
 
     if (isNaN(schoolId)) {
       return NextResponse.json(

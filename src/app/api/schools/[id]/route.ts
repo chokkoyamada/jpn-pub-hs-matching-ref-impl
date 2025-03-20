@@ -12,9 +12,10 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    const id = Number(params.id);
+    const { id } = params;
+    const schoolId = Number(id);
 
-    if (isNaN(id)) {
+    if (isNaN(schoolId)) {
       return NextResponse.json(
         {
           success: false,
@@ -27,7 +28,7 @@ export async function GET(
     // 高校情報を取得
     const schoolResult = await query(
       `SELECT * FROM schools WHERE id = ?`,
-      [id]
+      [schoolId]
     );
 
     if (schoolResult.rows.length === 0) {
@@ -51,7 +52,7 @@ export async function GET(
       WHERE a.school_id = ?
       ORDER BY a.preference_order ASC
       `,
-      [id]
+      [schoolId]
     );
 
     // 高校のマッチング結果を取得
@@ -64,7 +65,7 @@ export async function GET(
       WHERE er.matched_school_id = ?
       ORDER BY ss.created_at DESC, er.score DESC
       `,
-      [id]
+      [schoolId]
     );
 
     return NextResponse.json({

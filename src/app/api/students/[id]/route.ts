@@ -12,9 +12,10 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    const id = Number(params.id);
+    const { id } = params;
+    const studentId = Number(id);
 
-    if (isNaN(id)) {
+    if (isNaN(studentId)) {
       return NextResponse.json(
         {
           success: false,
@@ -27,7 +28,7 @@ export async function GET(
     // 学生情報を取得
     const studentResult = await query(
       `SELECT * FROM students WHERE id = ?`,
-      [id]
+      [studentId]
     );
 
     if (studentResult.rows.length === 0) {
@@ -51,7 +52,7 @@ export async function GET(
       WHERE a.student_id = ?
       ORDER BY a.preference_order ASC
       `,
-      [id]
+      [studentId]
     );
 
     // 学生の試験結果を取得
@@ -64,7 +65,7 @@ export async function GET(
       WHERE er.student_id = ?
       ORDER BY ss.created_at DESC
       `,
-      [id]
+      [studentId]
     );
 
     return NextResponse.json({

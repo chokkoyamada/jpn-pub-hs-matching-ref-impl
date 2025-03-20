@@ -12,12 +12,12 @@ export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  const id = params.id;
+  const { id } = params;
+  const schoolId = Number(id);
   const searchParams = request.nextUrl.searchParams;
   const sessionId = searchParams.get('session_id');
 
   try {
-    const schoolId = Number(id);
 
     if (isNaN(schoolId)) {
       return NextResponse.json(

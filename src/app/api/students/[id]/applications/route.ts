@@ -11,11 +11,10 @@ export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  const id = params.id;
+  const { id } = params;
+  const studentId = Number(id);
 
   try {
-    const studentId = Number(id);
-
     if (isNaN(studentId)) {
       return NextResponse.json(
         {
@@ -83,11 +82,10 @@ export async function POST(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  const id = params.id;
+  const { id } = params;
+  const studentId = Number(id);
 
   try {
-    const studentId = Number(id);
-
     if (isNaN(studentId)) {
       return NextResponse.json(
         {
@@ -224,11 +222,10 @@ export async function DELETE(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  const id = params.id;
+  const { id } = params;
+  const studentId = Number(id);
 
   try {
-    const studentId = Number(id);
-
     if (isNaN(studentId)) {
       return NextResponse.json(
         {
