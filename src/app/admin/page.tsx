@@ -22,6 +22,14 @@ export default function AdminPage() {
   const [error, setError] = useState<string | null>(null);
   const [runningSession, setRunningSession] = useState<number | null>(null);
 
+  // 応募情報の状態
+  const [applications, setApplications] = useState<Array<{
+    id: number;
+    student_id: number;
+    school_id: number;
+    preference_order: number;
+  }>>([]);
+
   // データ取得
   useEffect(() => {
     const fetchAdminData = async () => {
@@ -43,6 +51,19 @@ export default function AdminPage() {
         const studentsResponse = await fetchData<Student[]>('/students');
         if (studentsResponse.success && studentsResponse.data) {
           setStudents(studentsResponse.data);
+        }
+
+        // 応募情報を取得
+        const applicationsResponse = await fetchData<Array<{
+          id: number;
+          student_id: number;
+          school_id: number;
+          preference_order: number;
+          student_name?: string;
+          school_name?: string;
+        }>>('/applications');
+        if (applicationsResponse.success && applicationsResponse.data) {
+          setApplications(applicationsResponse.data);
         }
 
         // 最新の選考セッションの結果を取得
@@ -277,7 +298,9 @@ export default function AdminPage() {
                       <TableCell>{school.name}</TableCell>
                       <TableCell>{school.location}</TableCell>
                       <TableCell>{school.capacity}</TableCell>
-                      <TableCell>-</TableCell>
+                      <TableCell>
+                        {applications.filter(app => app.school_id === school.id).length}
+                      </TableCell>
                       <TableCell>
                         <Link href={`/schools/${school.id}`}>
                           <Button variant="outline" size="sm">詳細</Button>
@@ -339,7 +362,7 @@ export default function AdminPage() {
                       <TableRow key={student.id}>
                         <TableCell>{student.id}</TableCell>
                         <TableCell>{student.name}</TableCell>
-                        <TableCell>-</TableCell>
+                        <TableCell>{applications.filter(app => app.student_id === student.id).length}</TableCell>
                         <TableCell>
                           {matchedSchool ? matchedSchool.name : '未決定'}
                         </TableCell>
