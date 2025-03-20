@@ -7,11 +7,13 @@ import { query, transaction } from '@/lib/db';
  *
  * 特定の学生の応募情報を取得する
  */
+type Params = { id: string };
+
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Params }
 ) {
-  const { id } = params;
+  const { id } = context.params;
   const studentId = Number(id);
 
   try {
@@ -80,9 +82,9 @@ export async function GET(
  */
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Params }
 ) {
-  const { id } = params;
+  const { id } = context.params;
   const studentId = Number(id);
 
   try {
@@ -220,9 +222,9 @@ export async function POST(
  */
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Params }
 ) {
-  const { id } = params;
+  const { id } = context.params;
   const studentId = Number(id);
 
   try {

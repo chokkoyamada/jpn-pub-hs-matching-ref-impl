@@ -7,12 +7,14 @@ import { query } from '@/lib/db';
  *
  * 特定の学生の詳細情報を取得する
  */
+type Params = { id: string };
+
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Params }
 ) {
   try {
-    const { id } = params;
+    const { id } = context.params;
     const studentId = Number(id);
 
     if (isNaN(studentId)) {
@@ -77,7 +79,7 @@ export async function GET(
       }
     });
   } catch (error) {
-    console.error(`Error fetching student with ID ${params.id}:`, error);
+    console.error(`Error fetching student with ID ${context.params.id}:`, error);
 
     return NextResponse.json(
       {
@@ -99,10 +101,10 @@ export async function GET(
  */
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Params }
 ) {
   try {
-    const id = Number(params.id);
+    const id = Number(context.params.id);
 
     if (isNaN(id)) {
       return NextResponse.json(
@@ -177,7 +179,7 @@ export async function PUT(
       message: 'Student updated successfully'
     });
   } catch (error) {
-    console.error(`Error updating student with ID ${params.id}:`, error);
+    console.error(`Error updating student with ID ${context.params.id}:`, error);
 
     return NextResponse.json(
       {
@@ -198,10 +200,10 @@ export async function PUT(
  */
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Params }
 ) {
   try {
-    const id = Number(params.id);
+    const id = Number(context.params.id);
 
     if (isNaN(id)) {
       return NextResponse.json(
@@ -252,7 +254,7 @@ export async function DELETE(
       message: 'Student deleted successfully'
     });
   } catch (error) {
-    console.error(`Error deleting student with ID ${params.id}:`, error);
+    console.error(`Error deleting student with ID ${context.params.id}:`, error);
 
     return NextResponse.json(
       {

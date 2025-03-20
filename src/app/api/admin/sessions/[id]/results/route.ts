@@ -7,11 +7,13 @@ import { query } from '@/lib/db';
  *
  * 特定の選考セッションの結果を取得する
  */
+type Params = { id: string };
+
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Params }
 ) {
-  const { id } = params;
+  const { id } = context.params;
   const sessionId = Number(id);
 
   try {
@@ -60,7 +62,7 @@ export async function GET(
       data: resultsResult.rows
     });
   } catch (error) {
-    console.error(`Error fetching results for session ID ${id}:`, error);
+    console.error(`Error fetching results for session ID ${context.params.id}:`, error);
 
     return NextResponse.json(
       {

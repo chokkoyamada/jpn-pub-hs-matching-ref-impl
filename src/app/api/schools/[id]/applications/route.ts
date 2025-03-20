@@ -7,11 +7,13 @@ import { query } from '@/lib/db';
  *
  * 特定の高校への応募情報を取得する
  */
+type Params = { id: string };
+
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Params }
 ) {
-  const { id } = params;
+  const { id } = context.params;
   const schoolId = Number(id);
 
   try {
@@ -57,7 +59,7 @@ export async function GET(
       data: applicationsResult.rows
     });
   } catch (error) {
-    console.error(`Error fetching applications for school ID ${id}:`, error);
+    console.error(`Error fetching applications for school ID ${context.params.id}:`, error);
 
     return NextResponse.json(
       {

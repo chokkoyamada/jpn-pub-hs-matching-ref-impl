@@ -8,11 +8,13 @@ import { query } from '@/lib/db';
  * 特定の高校の試験結果を取得する
  * クエリパラメータ: session_id - 選考セッションID（指定しない場合は全てのセッションの結果を取得）
  */
+type Params = { id: string };
+
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Params }
 ) {
-  const { id } = params;
+  const { id } = context.params;
   const schoolId = Number(id);
   const searchParams = request.nextUrl.searchParams;
   const sessionId = searchParams.get('session_id');
@@ -71,7 +73,7 @@ export async function GET(
       data: resultsResult.rows
     });
   } catch (error) {
-    console.error(`Error fetching results for school ID ${id}:`, error);
+    console.error(`Error fetching results for school ID ${context.params.id}:`, error);
 
     return NextResponse.json(
       {
