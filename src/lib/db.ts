@@ -39,7 +39,12 @@ export async function transaction<T>(callback: () => Promise<T>): Promise<T> {
     await client.execute({ sql: 'COMMIT' });
     return result;
   } catch (error) {
-    await client.execute({ sql: 'ROLLBACK' });
+    try {
+      await client.execute({ sql: 'ROLLBACK' });
+    } catch (rollbackError) {
+      console.error('Rollback error:', rollbackError);
+      // ロールバックエラーは無視して元のエラーをスローする
+    }
     console.error('Transaction error:', error);
     throw error;
   }
