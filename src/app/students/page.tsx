@@ -36,13 +36,30 @@ export default function StudentsPage() {
         }
 
         // マッチング結果を取得（最新の選考セッションから）
-        const sessionsResponse = await fetchData<any>('/admin/sessions');
+        const sessionsResponse = await fetchData<Array<{
+          id: number;
+          status: string;
+          created_at: string;
+          summary: {
+            total_students: number;
+            matched_students: number;
+            average_score: number;
+          };
+        }>>('/admin/sessions');
         if (sessionsResponse.success && sessionsResponse.data) {
-          const completedSessions = sessionsResponse.data.filter((session: any) => session.status === 'completed');
+          const completedSessions = sessionsResponse.data.filter(session => session.status === 'completed');
           if (completedSessions.length > 0) {
-            const latestSession = completedSessions[completedSessions.length - 1];
+            // 最新のセッションを取得（作成日時でソート）
+            const sortedSessions = [...completedSessions].sort((a, b) =>
+              new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+            );
+            const latestSession = sortedSessions[0];
+
+            console.log('Latest session:', latestSession);
+
             const resultsResponse = await fetchData<ExamResult[]>(`/admin/sessions/${latestSession.id}/results`);
             if (resultsResponse.success && resultsResponse.data) {
+              console.log('Exam results:', resultsResponse.data);
               setExamResults(resultsResponse.data);
             }
           }

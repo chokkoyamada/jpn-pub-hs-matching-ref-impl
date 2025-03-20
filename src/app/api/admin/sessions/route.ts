@@ -20,11 +20,11 @@ export async function GET(request: NextRequest) {
         // マッチング結果の概要を取得
         const summaryResult = await query(`
           SELECT
-            COUNT(*) as total_students,
-            COUNT(CASE WHEN matched_school_id IS NOT NULL THEN 1 END) as matched_students,
-            AVG(score) as average_score
-          FROM exam_results
-          WHERE session_id = ?
+            COUNT(DISTINCT er.student_id) as total_students,
+            COUNT(DISTINCT CASE WHEN er.matched_school_id IS NOT NULL THEN er.student_id END) as matched_students,
+            AVG(er.score) as average_score
+          FROM exam_results er
+          WHERE er.session_id = ?
         `, [session.id]);
 
         // 学校ごとのマッチング数を取得

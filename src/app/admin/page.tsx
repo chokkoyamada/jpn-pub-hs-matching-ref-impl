@@ -51,9 +51,17 @@ export default function AdminPage() {
           : [];
 
         if (completedSessions.length > 0) {
-          const latestSession = completedSessions[completedSessions.length - 1];
+          // 最新のセッションを取得（作成日時でソート）
+          const sortedSessions = [...completedSessions].sort((a, b) =>
+            new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+          );
+          const latestSession = sortedSessions[0];
+
+          console.log('Admin - Latest session:', latestSession);
+
           const resultsResponse = await fetchData<ExamResult[]>(`/admin/sessions/${latestSession.id}/results`);
           if (resultsResponse.success && resultsResponse.data) {
+            console.log('Admin - Exam results:', resultsResponse.data);
             setExamResults(resultsResponse.data);
           }
         }
@@ -177,9 +185,9 @@ export default function AdminPage() {
                     </TableRow>
                   ) : (
                     sessions.map(session => {
-                      // このセッションのマッチング数を計算
-                      const matchCount = session.status === 'completed'
-                        ? examResults.filter(result => result.session_id === session.id && result.matched_school_id !== null).length
+                      // このセッションのマッチング数を取得
+                      const matchCount = session.status === 'completed' && session.summary
+                        ? session.summary.matched_students
                         : null;
 
                       return (
@@ -209,7 +217,9 @@ export default function AdminPage() {
                                   {runningSession === session.id ? '実行中...' : '実行'}
                                 </Button>
                               )}
-                              <Button variant="outline" size="sm">詳細</Button>
+                              <Link href={`/admin/sessions/${session.id}`}>
+                                <Button variant="outline" size="sm">詳細</Button>
+                              </Link>
                               <Button variant="ghost" size="sm">削除</Button>
                             </div>
                           </TableCell>

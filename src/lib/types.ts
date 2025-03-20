@@ -54,6 +54,17 @@ export interface SelectionSession {
   id: number;
   created_at: string;
   status: 'pending' | 'completed';
+  summary?: {
+    total_students: number;
+    matched_students: number;
+    average_score: number;
+  };
+  schools?: Array<{
+    id: number;
+    name: string;
+    capacity: number;
+    matched_count: number;
+  }>;
 }
 
 /**

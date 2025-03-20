@@ -24,6 +24,12 @@ export default function SchoolDetailPage({ params }: { params: Promise<{ id: str
   const [matchResults, setMatchResults] = useState<ExamResult[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editForm, setEditForm] = useState<{
+    name: string;
+    location: string;
+    capacity: number;
+  } | null>(null);
 
   // データ取得
   useEffect(() => {
@@ -31,9 +37,9 @@ export default function SchoolDetailPage({ params }: { params: Promise<{ id: str
       setLoading(true);
       try {
         // 高校情報を取得
-        const schoolResponse = await fetchData<School>(`/schools/${schoolId}`);
+        const schoolResponse = await fetchData<{ school: School }>(`/schools/${schoolId}`);
         if (schoolResponse.success && schoolResponse.data) {
-          setSchool(schoolResponse.data);
+          setSchool(schoolResponse.data.school);
         }
 
         // 応募情報を取得
@@ -89,24 +95,94 @@ export default function SchoolDetailPage({ params }: { params: Promise<{ id: str
               <p>{error}</p>
             </div>
           ) : school ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <h3 className="text-sm font-medium text-gray-500">高校名</h3>
-                <p className="mt-1">{school.name}</p>
+            isEditing ? (
+              <form onSubmit={async (e) => {
+                e.preventDefault();
+                if (!editForm) return;
+
+                try {
+                  const response = await fetch(`/api/schools/${schoolId}`, {
+                    method: 'PUT',
+                    headers: {
+                      'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(editForm),
+                  });
+
+                  const result = await response.json();
+
+                  if (result.success) {
+                    setSchool(result.data);
+                    setIsEditing(false);
+                  } else {
+                    setError('更新に失敗しました: ' + result.message);
+                  }
+                } catch (err) {
+                  setError('更新中にエラーが発生しました');
+                  console.error(err);
+                }
+              }}>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-500">高校名</h3>
+                    <input
+                      type="text"
+                      value={editForm?.name || ''}
+                      onChange={(e) => setEditForm(prev => prev ? {...prev, name: e.target.value} : null)}
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-500">所在地</h3>
+                    <input
+                      type="text"
+                      value={editForm?.location || ''}
+                      onChange={(e) => setEditForm(prev => prev ? {...prev, location: e.target.value} : null)}
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-500">定員</h3>
+                    <input
+                      type="number"
+                      value={editForm?.capacity || 0}
+                      onChange={(e) => setEditForm(prev => prev ? {...prev, capacity: Number(e.target.value)} : null)}
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                      min="1"
+                      required
+                    />
+                  </div>
+                </div>
+                <div className="flex gap-2 mt-4">
+                  <Button type="submit" variant="default">保存</Button>
+                  <Button type="button" variant="outline" onClick={() => {
+                    setIsEditing(false);
+                    setError(null);
+                  }}>キャンセル</Button>
+                </div>
+              </form>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <h3 className="text-sm font-medium text-gray-500">高校名</h3>
+                  <p className="mt-1">{school.name}</p>
+                </div>
+                <div>
+                  <h3 className="text-sm font-medium text-gray-500">所在地</h3>
+                  <p className="mt-1">{school.location}</p>
+                </div>
+                <div>
+                  <h3 className="text-sm font-medium text-gray-500">定員</h3>
+                  <p className="mt-1">{school.capacity}名</p>
+                </div>
+                <div>
+                  <h3 className="text-sm font-medium text-gray-500">ステータス</h3>
+                  <p className="mt-1">応募受付中</p>
+                </div>
               </div>
-              <div>
-                <h3 className="text-sm font-medium text-gray-500">所在地</h3>
-                <p className="mt-1">{school.location}</p>
-              </div>
-              <div>
-                <h3 className="text-sm font-medium text-gray-500">定員</h3>
-                <p className="mt-1">{school.capacity}名</p>
-              </div>
-              <div>
-                <h3 className="text-sm font-medium text-gray-500">ステータス</h3>
-                <p className="mt-1">応募受付中</p>
-              </div>
-            </div>
+            )
           ) : (
             <div className="p-6 text-center bg-gray-50 rounded-lg">
               <p className="text-gray-500">高校情報がありません</p>
@@ -114,7 +190,21 @@ export default function SchoolDetailPage({ params }: { params: Promise<{ id: str
           )}
         </CardContent>
         <CardFooter>
-          <Button variant="outline">情報を編集</Button>
+          {!isEditing && school && (
+            <Button
+              variant="outline"
+              onClick={() => {
+                setEditForm({
+                  name: school.name,
+                  location: school.location,
+                  capacity: school.capacity
+                });
+                setIsEditing(true);
+              }}
+            >
+              情報を編集
+            </Button>
+          )}
         </CardFooter>
       </Card>
 
