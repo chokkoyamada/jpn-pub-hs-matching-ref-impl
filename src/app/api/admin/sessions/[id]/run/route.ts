@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { query, transaction } from '@/lib/db';
-import { runDAAlgorithm, generateRandomScores, Student, School, MatchResult } from '@/lib/matching/da-algorithm';
+import { query } from '@/lib/db';
+import { runDAAlgorithm, generateRandomScores, Student, School } from '@/lib/matching/da-algorithm';
+
+interface SchoolRow {
+  id: number | string;
+  capacity: number | string;
+}
 
 /**
  * マッチング実行API
@@ -10,9 +15,9 @@ import { runDAAlgorithm, generateRandomScores, Student, School, MatchResult } fr
  */
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
-  const { id } = params;
+  const { id } = await context.params;
 
   try {
     const sessionId = Number(id);
@@ -114,7 +119,8 @@ export async function POST(
       preferences: studentPreferences.get(id) || []
     }));
 
-    const schools: School[] = schoolsResult.rows.map((school: any) => {
+    const schools: School[] = schoolsResult.rows.map((row) => {
+      const school = row as SchoolRow;
       const id = Number(school.id);
       const capacity = Number(school.capacity);
 

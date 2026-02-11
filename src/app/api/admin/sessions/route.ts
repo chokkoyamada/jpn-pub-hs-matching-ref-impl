@@ -1,5 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { query } from '@/lib/db';
+
+interface SessionRow {
+  id: number | string;
+  [key: string]: unknown;
+}
 
 /**
  * 選考セッション一覧取得API
@@ -7,7 +12,7 @@ import { query } from '@/lib/db';
  *
  * すべての選考セッション情報を取得する
  */
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const result = await query(`
       SELECT * FROM selection_sessions
@@ -16,7 +21,9 @@ export async function GET(request: NextRequest) {
 
     // 各セッションの結果概要を取得
     const sessionsWithSummary = await Promise.all(
-      result.rows.map(async (session: any) => {
+      result.rows.map(async (row) => {
+        const session = row as SessionRow;
+        const sessionId = Number(session.id);
         // マッチング結果の概要を取得
         const summaryResult = await query(`
           SELECT
@@ -25,7 +32,7 @@ export async function GET(request: NextRequest) {
             AVG(er.score) as average_score
           FROM exam_results er
           WHERE er.session_id = ?
-        `, [session.id]);
+        `, [sessionId]);
 
         // 学校ごとのマッチング数を取得
         const schoolsResult = await query(`
@@ -34,7 +41,7 @@ export async function GET(request: NextRequest) {
           LEFT JOIN exam_results er ON s.id = er.matched_school_id AND er.session_id = ?
           GROUP BY s.id
           ORDER BY s.id ASC
-        `, [session.id]);
+        `, [sessionId]);
 
         return {
           ...session,
@@ -68,7 +75,7 @@ export async function GET(request: NextRequest) {
  *
  * 新しい選考セッションを作成する
  */
-export async function POST(request: NextRequest) {
+export async function POST() {
   try {
     // 新しいセッションを作成
     const result = await query(`

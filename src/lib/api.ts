@@ -43,7 +43,7 @@ export async function fetchData<T>(endpoint: string): Promise<ApiResponse<T>> {
  * @param body リクエストボディ
  * @returns レスポンスデータ
  */
-export async function postData<T, U = any>(endpoint: string, body: U): Promise<ApiResponse<T>> {
+export async function postData<T, U = unknown>(endpoint: string, body: U): Promise<ApiResponse<T>> {
   try {
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
       method: 'POST',
@@ -70,7 +70,7 @@ export async function postData<T, U = any>(endpoint: string, body: U): Promise<A
  * @param body リクエストボディ
  * @returns レスポンスデータ
  */
-export async function putData<T, U = any>(endpoint: string, body: U): Promise<ApiResponse<T>> {
+export async function putData<T, U = unknown>(endpoint: string, body: U): Promise<ApiResponse<T>> {
   try {
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
       method: 'PUT',

@@ -11,10 +11,10 @@ type Params = { id: string };
 
 export async function GET(
   request: NextRequest,
-  context: { params: Params }
+  context: { params: Promise<Params> }
 ) {
+  const { id } = await context.params;
   try {
-    const { id } = context.params;
     const studentId = Number(id);
 
     if (isNaN(studentId)) {
@@ -79,7 +79,7 @@ export async function GET(
       }
     });
   } catch (error) {
-    console.error(`Error fetching student with ID ${context.params.id}:`, error);
+    console.error(`Error fetching student with ID ${id}:`, error);
 
     return NextResponse.json(
       {
@@ -101,12 +101,13 @@ export async function GET(
  */
 export async function PUT(
   request: NextRequest,
-  context: { params: Params }
+  context: { params: Promise<Params> }
 ) {
+  const { id } = await context.params;
   try {
-    const id = Number(context.params.id);
+    const studentId = Number(id);
 
-    if (isNaN(id)) {
+    if (isNaN(studentId)) {
       return NextResponse.json(
         {
           success: false,
@@ -132,7 +133,7 @@ export async function PUT(
     // 学生が存在するか確認
     const checkResult = await query(
       `SELECT * FROM students WHERE id = ?`,
-      [id]
+      [studentId]
     );
 
     if (checkResult.rows.length === 0) {
@@ -160,7 +161,7 @@ export async function PUT(
     }
 
     // IDをパラメータに追加
-    updateParams.push(id);
+    updateParams.push(studentId);
 
     // 学生情報を更新
     const result = await query(
@@ -179,7 +180,7 @@ export async function PUT(
       message: 'Student updated successfully'
     });
   } catch (error) {
-    console.error(`Error updating student with ID ${context.params.id}:`, error);
+    console.error(`Error updating student with ID ${id}:`, error);
 
     return NextResponse.json(
       {
@@ -200,12 +201,13 @@ export async function PUT(
  */
 export async function DELETE(
   request: NextRequest,
-  context: { params: Params }
+  context: { params: Promise<Params> }
 ) {
+  const { id } = await context.params;
   try {
-    const id = Number(context.params.id);
+    const studentId = Number(id);
 
-    if (isNaN(id)) {
+    if (isNaN(studentId)) {
       return NextResponse.json(
         {
           success: false,
@@ -218,7 +220,7 @@ export async function DELETE(
     // 学生が存在するか確認
     const checkResult = await query(
       `SELECT * FROM students WHERE id = ?`,
-      [id]
+      [studentId]
     );
 
     if (checkResult.rows.length === 0) {
@@ -234,19 +236,19 @@ export async function DELETE(
     // 関連する応募情報を削除
     await query(
       `DELETE FROM applications WHERE student_id = ?`,
-      [id]
+      [studentId]
     );
 
     // 関連する試験結果を削除
     await query(
       `DELETE FROM exam_results WHERE student_id = ?`,
-      [id]
+      [studentId]
     );
 
     // 学生を削除
     await query(
       `DELETE FROM students WHERE id = ?`,
-      [id]
+      [studentId]
     );
 
     return NextResponse.json({
@@ -254,7 +256,7 @@ export async function DELETE(
       message: 'Student deleted successfully'
     });
   } catch (error) {
-    console.error(`Error deleting student with ID ${context.params.id}:`, error);
+    console.error(`Error deleting student with ID ${id}:`, error);
 
     return NextResponse.json(
       {

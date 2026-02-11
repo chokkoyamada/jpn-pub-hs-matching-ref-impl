@@ -11,9 +11,9 @@ type Params = { id: string };
 
 export async function GET(
   request: NextRequest,
-  context: { params: Params }
+  context: { params: Promise<Params> }
 ) {
-  const { id } = context.params;
+  const { id } = await context.params;
   const sessionId = Number(id);
 
   try {
@@ -62,7 +62,7 @@ export async function GET(
       data: resultsResult.rows
     });
   } catch (error) {
-    console.error(`Error fetching results for session ID ${context.params.id}:`, error);
+    console.error(`Error fetching results for session ID ${id}:`, error);
 
     return NextResponse.json(
       {

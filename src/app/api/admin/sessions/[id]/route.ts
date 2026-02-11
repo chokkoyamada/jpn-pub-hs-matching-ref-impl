@@ -9,10 +9,10 @@ import { query } from '@/lib/db';
  */
 export async function GET(
   request: NextRequest,
-  context: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await context.params;
   try {
-    const { id } = context.params;
     const sessionId = Number(id);
 
     if (isNaN(sessionId)) {
@@ -73,7 +73,7 @@ export async function GET(
       }
     });
   } catch (error) {
-    console.error(`Error fetching session with ID ${context.params.id}:`, error);
+    console.error(`Error fetching session with ID ${id}:`, error);
 
     return NextResponse.json(
       {

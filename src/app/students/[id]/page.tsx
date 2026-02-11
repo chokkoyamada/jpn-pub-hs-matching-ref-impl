@@ -5,7 +5,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 import { Button } from '@/components/ui/Button';
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/Table';
 import { fetchData } from '@/lib/api';
-import { School, Application, ExamResult } from '@/lib/types';
+import { School, Application, ExamResult, SelectionSession } from '@/lib/types';
 import ApplicationForm from '@/components/students/ApplicationForm';
 
 import { use } from 'react';
@@ -45,9 +45,9 @@ export default function StudentDetailPage({ params }: { params: Promise<{ id: st
         }
 
         // マッチング結果を取得（最新の選考セッションから）
-        const sessionsResponse = await fetchData<any>('/admin/sessions');
+        const sessionsResponse = await fetchData<SelectionSession[]>('/admin/sessions');
         if (sessionsResponse.success && sessionsResponse.data) {
-          const completedSessions = sessionsResponse.data.filter((session: any) => session.status === 'completed');
+          const completedSessions = sessionsResponse.data.filter((session) => session.status === 'completed');
           if (completedSessions.length > 0) {
             const latestSession = completedSessions[completedSessions.length - 1];
             const resultsResponse = await fetchData<ExamResult[]>(`/students/${studentId}/results?session_id=${latestSession.id}`);

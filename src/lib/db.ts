@@ -1,4 +1,5 @@
 import { createClient } from '@libsql/client';
+import type { InValue } from '@libsql/client';
 
 /**
  * Tursoデータベースクライアント
@@ -17,7 +18,7 @@ export default client;
  * @param params クエリパラメータ
  * @returns クエリ結果
  */
-export async function query(sql: string, params: any[] = []) {
+export async function query(sql: string, params: InValue[] = []) {
   try {
     const result = await client.execute({ sql, args: params });
     return result;

@@ -7,7 +7,7 @@ import { query } from '@/lib/db';
  *
  * すべての学生情報を取得する
  */
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const result = await query(`
       SELECT * FROM students

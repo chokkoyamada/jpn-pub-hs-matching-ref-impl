@@ -12,9 +12,9 @@ type Params = { id: string };
 
 export async function GET(
   request: NextRequest,
-  context: { params: Params }
+  context: { params: Promise<Params> }
 ) {
-  const { id } = context.params;
+  const { id } = await context.params;
   const studentId = Number(id);
   const searchParams = request.nextUrl.searchParams;
   const sessionId = searchParams.get('session_id');
@@ -71,7 +71,7 @@ export async function GET(
       data: resultsResult.rows
     });
   } catch (error) {
-    console.error(`Error fetching results for student ID ${context.params.id}:`, error);
+    console.error(`Error fetching results for student ID ${id}:`, error);
 
     return NextResponse.json(
       {

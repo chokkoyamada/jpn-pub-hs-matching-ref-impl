@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { initializeDatabase } from '@/lib/schema';
 
 /**
@@ -7,7 +7,7 @@ import { initializeDatabase } from '@/lib/schema';
  *
  * データベーススキーマの作成とサンプルデータの挿入を行う
  */
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     await initializeDatabase();
 

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { query, transaction } from '@/lib/db';
+import { query } from '@/lib/db';
 
 /**
  * 学生の応募情報取得API
@@ -8,12 +8,13 @@ import { query, transaction } from '@/lib/db';
  * 特定の学生の応募情報を取得する
  */
 type Params = { id: string };
+type ApplicationPayload = { school_id: number; preference_order: number };
 
 export async function GET(
   request: NextRequest,
-  context: { params: Params }
+  context: { params: Promise<Params> }
 ) {
-  const { id } = context.params;
+  const { id } = await context.params;
   const studentId = Number(id);
 
   try {
@@ -82,9 +83,9 @@ export async function GET(
  */
 export async function POST(
   request: NextRequest,
-  context: { params: Params }
+  context: { params: Promise<Params> }
 ) {
-  const { id } = context.params;
+  const { id } = await context.params;
   const studentId = Number(id);
 
   try {
@@ -138,7 +139,7 @@ export async function POST(
     }
 
     // 各応募の学校が存在するか確認
-    const schoolIds = body.applications.map((app: any) => app.school_id);
+    const schoolIds = (body.applications as ApplicationPayload[]).map((app) => app.school_id);
     const schoolsResult = await query(
       `SELECT id FROM schools WHERE id IN (${schoolIds.map(() => '?').join(', ')})`,
       schoolIds
@@ -155,7 +156,7 @@ export async function POST(
     }
 
     // 希望順位が重複していないか確認
-    const preferenceOrders = body.applications.map((app: any) => app.preference_order);
+    const preferenceOrders = (body.applications as ApplicationPayload[]).map((app) => app.preference_order);
     if (new Set(preferenceOrders).size !== preferenceOrders.length) {
       return NextResponse.json(
         {
@@ -222,9 +223,9 @@ export async function POST(
  */
 export async function DELETE(
   request: NextRequest,
-  context: { params: Params }
+  context: { params: Promise<Params> }
 ) {
-  const { id } = context.params;
+  const { id } = await context.params;
   const studentId = Number(id);
 
   try {

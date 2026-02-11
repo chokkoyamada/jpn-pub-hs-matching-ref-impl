@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Form, FormGroup, FormLabel, FormSelect, FormError } from '@/components/ui/Form';
 import { Button } from '@/components/ui/Button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/Card';
-import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/Table';
 import { fetchData, postData } from '@/lib/api';
 import { School, Application, ApplicationSubmission } from '@/lib/types';
 

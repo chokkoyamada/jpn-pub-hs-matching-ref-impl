@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { query } from '@/lib/db';
 
 /**
@@ -7,7 +7,7 @@ import { query } from '@/lib/db';
  *
  * すべての応募情報を取得する
  */
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     // すべての応募情報を取得
     const result = await query(`

@@ -11,10 +11,10 @@ type Params = { id: string };
 
 export async function GET(
   request: NextRequest,
-  context: { params: Params }
+  context: { params: Promise<Params> }
 ) {
+  const { id } = await context.params;
   try {
-    const { id } = context.params;
     const schoolId = Number(id);
 
     if (isNaN(schoolId)) {
@@ -79,7 +79,7 @@ export async function GET(
       }
     });
   } catch (error) {
-    console.error(`Error fetching school with ID ${context.params.id}:`, error);
+    console.error(`Error fetching school with ID ${id}:`, error);
 
     return NextResponse.json(
       {
@@ -101,12 +101,13 @@ export async function GET(
  */
 export async function PUT(
   request: NextRequest,
-  context: { params: Params }
+  context: { params: Promise<Params> }
 ) {
+  const { id } = await context.params;
   try {
-    const id = Number(context.params.id);
+    const schoolId = Number(id);
 
-    if (isNaN(id)) {
+    if (isNaN(schoolId)) {
       return NextResponse.json(
         {
           success: false,
@@ -143,7 +144,7 @@ export async function PUT(
     // 高校が存在するか確認
     const checkResult = await query(
       `SELECT * FROM schools WHERE id = ?`,
-      [id]
+      [schoolId]
     );
 
     if (checkResult.rows.length === 0) {
@@ -176,7 +177,7 @@ export async function PUT(
     }
 
     // IDをパラメータに追加
-    updateParams.push(id);
+    updateParams.push(schoolId);
 
     // 高校情報を更新
     const result = await query(
@@ -195,7 +196,7 @@ export async function PUT(
       message: 'School updated successfully'
     });
   } catch (error) {
-    console.error(`Error updating school with ID ${context.params.id}:`, error);
+    console.error(`Error updating school with ID ${id}:`, error);
 
     return NextResponse.json(
       {
@@ -216,12 +217,13 @@ export async function PUT(
  */
 export async function DELETE(
   request: NextRequest,
-  context: { params: Params }
+  context: { params: Promise<Params> }
 ) {
+  const { id } = await context.params;
   try {
-    const id = Number(context.params.id);
+    const schoolId = Number(id);
 
-    if (isNaN(id)) {
+    if (isNaN(schoolId)) {
       return NextResponse.json(
         {
           success: false,
@@ -234,7 +236,7 @@ export async function DELETE(
     // 高校が存在するか確認
     const checkResult = await query(
       `SELECT * FROM schools WHERE id = ?`,
-      [id]
+      [schoolId]
     );
 
     if (checkResult.rows.length === 0) {
@@ -250,7 +252,7 @@ export async function DELETE(
     // 関連する応募情報を削除
     await query(
       `DELETE FROM applications WHERE school_id = ?`,
-      [id]
+      [schoolId]
     );
 
     // 関連するマッチング結果を更新（マッチング先をnullに）
@@ -260,13 +262,13 @@ export async function DELETE(
       SET matched_school_id = NULL
       WHERE matched_school_id = ?
       `,
-      [id]
+      [schoolId]
     );
 
     // 高校を削除
     await query(
       `DELETE FROM schools WHERE id = ?`,
-      [id]
+      [schoolId]
     );
 
     return NextResponse.json({
@@ -274,7 +276,7 @@ export async function DELETE(
       message: 'School deleted successfully'
     });
   } catch (error) {
-    console.error(`Error deleting school with ID ${context.params.id}:`, error);
+    console.error(`Error deleting school with ID ${id}:`, error);
 
     return NextResponse.json(
       {

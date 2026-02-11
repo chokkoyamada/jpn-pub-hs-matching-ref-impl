@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
 import { fetchData } from '@/lib/api';
 import { Student, ExamResult, School } from '@/lib/types';
 import StudentsList from '@/components/students/StudentsList';
