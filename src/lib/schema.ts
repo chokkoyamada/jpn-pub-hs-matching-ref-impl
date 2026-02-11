@@ -64,6 +64,7 @@ export async function createSchema() {
           session_id INTEGER NOT NULL,
           student_id INTEGER NOT NULL,
           score INTEGER NOT NULL,
+          algorithm TEXT NOT NULL DEFAULT 'baseline',
           matched_school_id INTEGER,
           FOREIGN KEY (session_id) REFERENCES selection_sessions(id),
           FOREIGN KEY (student_id) REFERENCES students(id),
@@ -71,6 +72,40 @@ export async function createSchema() {
         )
       `
     });
+
+    await client.execute({
+      sql: `
+        CREATE TABLE IF NOT EXISTS matching_runs (
+          id INTEGER PRIMARY KEY,
+          session_id INTEGER NOT NULL,
+          algorithm TEXT NOT NULL,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          summary_json TEXT,
+          FOREIGN KEY (session_id) REFERENCES selection_sessions(id)
+        )
+      `
+    });
+
+    await client.execute({
+      sql: `
+        CREATE TABLE IF NOT EXISTS matching_trace_steps (
+          id INTEGER PRIMARY KEY,
+          run_id INTEGER NOT NULL,
+          step_index INTEGER NOT NULL,
+          payload_json TEXT NOT NULL,
+          FOREIGN KEY (run_id) REFERENCES matching_runs(id)
+        )
+      `
+    });
+
+    // 既存DB向けの互換マイグレーション
+    try {
+      await client.execute({
+        sql: `ALTER TABLE exam_results ADD COLUMN algorithm TEXT NOT NULL DEFAULT 'baseline'`
+      });
+    } catch {
+      // 既に列が存在する場合は無視
+    }
 
   } catch (error) {
     console.error('Error creating database schema:', error);

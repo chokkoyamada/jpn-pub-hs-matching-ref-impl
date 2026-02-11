@@ -38,9 +38,15 @@ export async function GET(
 
     // 試験結果を取得
     let resultsQuery = `
-      SELECT er.*, s.name as school_name
+      SELECT
+        er.*,
+        s.name as school_name,
+        a.preference_order as matched_preference_order
       FROM exam_results er
       LEFT JOIN schools s ON er.matched_school_id = s.id
+      LEFT JOIN applications a
+        ON a.student_id = er.student_id
+       AND a.school_id = er.matched_school_id
       WHERE er.student_id = ?
     `;
     const queryParams = [studentId];

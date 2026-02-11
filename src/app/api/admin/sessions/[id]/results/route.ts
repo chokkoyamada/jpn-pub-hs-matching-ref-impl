@@ -36,10 +36,17 @@ export async function GET(
     // 試験結果を取得
     const resultsResult = await query(
       `
-      SELECT er.*, s.name as student_name, sc.name as school_name
+      SELECT
+        er.*,
+        s.name as student_name,
+        sc.name as school_name,
+        a.preference_order as matched_preference_order
       FROM exam_results er
       JOIN students s ON er.student_id = s.id
       LEFT JOIN schools sc ON er.matched_school_id = sc.id
+      LEFT JOIN applications a
+        ON a.student_id = er.student_id
+       AND a.school_id = er.matched_school_id
       WHERE er.session_id = ?
       ORDER BY er.score DESC
       `,

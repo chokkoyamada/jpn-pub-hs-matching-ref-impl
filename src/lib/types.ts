@@ -84,7 +84,9 @@ export interface ExamResult {
   session_id: number;
   student_id: number;
   score: number;
+  algorithm?: 'baseline' | 'da';
   matched_school_id: number | null;
+  matched_preference_order?: number | null;
   student_name?: string;
   school_name?: string;
 }
@@ -112,11 +114,41 @@ export interface SchoolMatchResult {
  * マッチング実行結果の型定義
  */
 export interface MatchingResult {
+  algorithm?: 'baseline' | 'da';
   session: SelectionSession;
   summary: MatchingSummary;
   schools: SchoolMatchResult[];
   totalMatches: number;
   totalStudents: number;
+}
+
+export interface ComparisonSummaryResponse {
+  baseline: {
+    summary: {
+      totalStudents: number;
+      matchedStudents: number;
+      unmatchedCount: number;
+      matchRate: number;
+      preferenceStats: number[];
+      preferenceRates: number[];
+      firstChoiceRate: number;
+    };
+  };
+  da: {
+    summary: {
+      totalStudents: number;
+      matchedStudents: number;
+      unmatchedCount: number;
+      matchRate: number;
+      preferenceStats: number[];
+      preferenceRates: number[];
+      firstChoiceRate: number;
+    };
+  };
+  delta: {
+    firstChoiceRate: number;
+    unmatchedCount: number;
+  };
 }
 
 export interface SessionSummary {

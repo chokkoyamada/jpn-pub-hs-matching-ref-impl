@@ -89,10 +89,10 @@ export default function AdminPage() {
   }, []);
 
   // 選考セッションを実行
-  const runSession = async (sessionId: number) => {
+  const runSession = async (sessionId: number, algorithm: 'baseline' | 'da') => {
     setRunningSession(sessionId);
     try {
-      const response = await postData(`/admin/sessions/${sessionId}/run`, {});
+      const response = await postData(`/admin/sessions/${sessionId}/run`, { algorithm });
       if (response.success) {
         // セッション一覧を再取得
         const sessionsResponse = await fetchData<SelectionSession[]>('/admin/sessions');
@@ -224,13 +224,23 @@ export default function AdminPage() {
                           <TableCell>
                             <div className="flex gap-2">
                               {session.status === 'pending' && (
-                                <Button
-                                  size="sm"
-                                  onClick={() => runSession(session.id)}
-                                  disabled={runningSession !== null}
-                                >
-                                  {runningSession === session.id ? '実行中...' : '実行'}
-                                </Button>
+                                <>
+                                  <Button
+                                    size="sm"
+                                    onClick={() => runSession(session.id, 'baseline')}
+                                    disabled={runningSession !== null}
+                                  >
+                                    {runningSession === session.id ? '実行中...' : '現行実行'}
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="secondary"
+                                    onClick={() => runSession(session.id, 'da')}
+                                    disabled={runningSession !== null}
+                                  >
+                                    {runningSession === session.id ? '実行中...' : 'DA実行'}
+                                  </Button>
+                                </>
                               )}
                               <Link href={`/admin/sessions/${session.id}`}>
                                 <Button variant="outline" size="sm">詳細</Button>
