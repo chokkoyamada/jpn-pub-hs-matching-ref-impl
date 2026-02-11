@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/Card';
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/Table';
 import { fetchData } from '@/lib/api';
+import { toUiErrorMessage } from '@/lib/client-utils';
 import { SelectionSession, ExamResult, School, Student } from '@/lib/types';
 import { use } from 'react';
 
@@ -56,7 +57,7 @@ export default function SessionDetailPage({ params }: { params: Promise<{ id: st
           setStudents(studentsResponse.data);
         }
       } catch (err) {
-        setError('データの取得中にエラーが発生しました');
+        setError(toUiErrorMessage(err instanceof Error ? err.message : undefined));
         console.error(err);
       } finally {
         setLoading(false);

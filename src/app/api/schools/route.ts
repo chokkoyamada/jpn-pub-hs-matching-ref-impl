@@ -1,5 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { query } from '@/lib/db';
+import { ok, created, fail } from '@/lib/api-response';
+import { toSchoolDto } from '@/lib/dto';
 
 /**
  * 高校一覧取得API
@@ -14,21 +16,10 @@ export async function GET() {
       ORDER BY id ASC
     `);
 
-    return NextResponse.json({
-      success: true,
-      data: result.rows
-    });
+    return ok(result.rows.map((row) => toSchoolDto(row as Record<string, unknown>)));
   } catch (error) {
-    console.error('Error fetching schools:', error);
-
-    return NextResponse.json(
-      {
-        success: false,
-        message: 'Failed to fetch schools',
-        error: error instanceof Error ? error.message : String(error)
-      },
-      { status: 500 }
-    );
+    console.error('[api/schools][GET] failed:', error);
+    return fail('Failed to fetch schools', 500, error);
   }
 }
 
@@ -45,23 +36,11 @@ export async function POST(request: NextRequest) {
 
     // バリデーション
     if (!body.name) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: 'Name is required'
-        },
-        { status: 400 }
-      );
+      return fail('Name is required', 400);
     }
 
     if (body.capacity === undefined || typeof body.capacity !== 'number' || body.capacity <= 0) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: 'Capacity must be a positive number'
-        },
-        { status: 400 }
-      );
+      return fail('Capacity must be a positive number', 400);
     }
 
     // 次のIDを取得
@@ -83,21 +62,9 @@ export async function POST(request: NextRequest) {
       [newId, body.name, body.location || null, body.capacity]
     );
 
-    return NextResponse.json({
-      success: true,
-      data: result.rows[0],
-      message: 'School created successfully'
-    }, { status: 201 });
+    return created(toSchoolDto(result.rows[0] as Record<string, unknown>), 'School created successfully');
   } catch (error) {
-    console.error('Error creating school:', error);
-
-    return NextResponse.json(
-      {
-        success: false,
-        message: 'Failed to create school',
-        error: error instanceof Error ? error.message : String(error)
-      },
-      { status: 500 }
-    );
+    console.error('[api/schools][POST] failed:', error);
+    return fail('Failed to create school', 500, error);
   }
 }

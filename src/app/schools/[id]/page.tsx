@@ -5,6 +5,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 import { Button } from '@/components/ui/Button';
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/Table';
 import { fetchData } from '@/lib/api';
+import { getLatestCompletedSession, toUiErrorMessage } from '@/lib/client-utils';
 import { School, Application, ExamResult, SelectionSession } from '@/lib/types';
 
 import { use } from 'react';
@@ -51,9 +52,8 @@ export default function SchoolDetailPage({ params }: { params: Promise<{ id: str
         // マッチング結果を取得（最新の選考セッションから）
         const sessionsResponse = await fetchData<SelectionSession[]>('/admin/sessions');
         if (sessionsResponse.success && sessionsResponse.data) {
-          const completedSessions = sessionsResponse.data.filter((session) => session.status === 'completed');
-          if (completedSessions.length > 0) {
-            const latestSession = completedSessions[completedSessions.length - 1];
+          const latestSession = getLatestCompletedSession(sessionsResponse.data);
+          if (latestSession) {
             const resultsResponse = await fetchData<ExamResult[]>(`/schools/${schoolId}/results?session_id=${latestSession.id}`);
             if (resultsResponse.success && resultsResponse.data) {
               setMatchResults(resultsResponse.data);
@@ -61,7 +61,7 @@ export default function SchoolDetailPage({ params }: { params: Promise<{ id: str
           }
         }
       } catch (err) {
-        setError('データの取得中にエラーが発生しました');
+        setError(toUiErrorMessage(err instanceof Error ? err.message : undefined));
         console.error(err);
       } finally {
         setLoading(false);
@@ -116,10 +116,10 @@ export default function SchoolDetailPage({ params }: { params: Promise<{ id: str
                     setSchool(result.data);
                     setIsEditing(false);
                   } else {
-                    setError('更新に失敗しました: ' + result.message);
+                    setError(toUiErrorMessage(result.message, '更新に失敗しました'));
                   }
                 } catch (err) {
-                  setError('更新中にエラーが発生しました');
+                  setError(toUiErrorMessage(err instanceof Error ? err.message : undefined, '更新中にエラーが発生しました'));
                   console.error(err);
                 }
               }}>
@@ -197,7 +197,7 @@ export default function SchoolDetailPage({ params }: { params: Promise<{ id: str
               onClick={() => {
                 setEditForm({
                   name: school.name,
-                  location: school.location,
+                  location: school.location ?? '',
                   capacity: school.capacity
                 });
                 setIsEditing(true);

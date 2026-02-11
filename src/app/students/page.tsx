@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/Card';
 import { fetchData } from '@/lib/api';
+import { getLatestCompletedSession, toUiErrorMessage } from '@/lib/client-utils';
 import { Student, ExamResult, School } from '@/lib/types';
 import StudentsList from '@/components/students/StudentsList';
 
@@ -37,7 +38,7 @@ export default function StudentsPage() {
         // マッチング結果を取得（最新の選考セッションから）
         const sessionsResponse = await fetchData<Array<{
           id: number;
-          status: string;
+          status: 'pending' | 'completed';
           created_at: string;
           summary: {
             total_students: number;
@@ -46,25 +47,16 @@ export default function StudentsPage() {
           };
         }>>('/admin/sessions');
         if (sessionsResponse.success && sessionsResponse.data) {
-          const completedSessions = sessionsResponse.data.filter(session => session.status === 'completed');
-          if (completedSessions.length > 0) {
-            // 最新のセッションを取得（作成日時でソート）
-            const sortedSessions = [...completedSessions].sort((a, b) =>
-              new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-            );
-            const latestSession = sortedSessions[0];
-
-            console.log('Latest session:', latestSession);
-
+          const latestSession = getLatestCompletedSession(sessionsResponse.data);
+          if (latestSession) {
             const resultsResponse = await fetchData<ExamResult[]>(`/admin/sessions/${latestSession.id}/results`);
             if (resultsResponse.success && resultsResponse.data) {
-              console.log('Exam results:', resultsResponse.data);
               setExamResults(resultsResponse.data);
             }
           }
         }
       } catch (err) {
-        setError('データの取得中にエラーが発生しました');
+        setError(toUiErrorMessage(err instanceof Error ? err.message : undefined));
         console.error(err);
       } finally {
         setLoading(false);

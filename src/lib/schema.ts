@@ -72,7 +72,6 @@ export async function createSchema() {
       `
     });
 
-    console.log('Database schema created successfully');
   } catch (error) {
     console.error('Error creating database schema:', error);
     throw error;
@@ -115,7 +114,6 @@ export async function insertSampleData() {
       `
     });
 
-    console.log('Sample data inserted successfully');
   } catch (error) {
     console.error('Error inserting sample data:', error);
     throw error;
@@ -130,7 +128,6 @@ export async function initializeDatabase() {
   try {
     await createSchema();
     await insertSampleData();
-    console.log('Database initialized successfully');
   } catch (error) {
     console.error('Error initializing database:', error);
     throw error;

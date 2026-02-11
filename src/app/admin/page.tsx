@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/Button';
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/Table';
 import Link from 'next/link';
 import { fetchData, postData } from '@/lib/api';
+import { getLatestCompletedSession, toUiErrorMessage } from '@/lib/client-utils';
 import { School, Student, SelectionSession, ExamResult } from '@/lib/types';
 
 /**
@@ -67,27 +68,17 @@ export default function AdminPage() {
         }
 
         // 最新の選考セッションの結果を取得
-        const completedSessions = sessionsResponse.success && sessionsResponse.data
-          ? sessionsResponse.data.filter(session => session.status === 'completed')
-          : [];
-
-        if (completedSessions.length > 0) {
-          // 最新のセッションを取得（作成日時でソート）
-          const sortedSessions = [...completedSessions].sort((a, b) =>
-            new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-          );
-          const latestSession = sortedSessions[0];
-
-          console.log('Admin - Latest session:', latestSession);
-
+        const latestSession = sessionsResponse.success && sessionsResponse.data
+          ? getLatestCompletedSession(sessionsResponse.data)
+          : null;
+        if (latestSession) {
           const resultsResponse = await fetchData<ExamResult[]>(`/admin/sessions/${latestSession.id}/results`);
           if (resultsResponse.success && resultsResponse.data) {
-            console.log('Admin - Exam results:', resultsResponse.data);
             setExamResults(resultsResponse.data);
           }
         }
       } catch (err) {
-        setError('データの取得中にエラーが発生しました');
+        setError(toUiErrorMessage(err instanceof Error ? err.message : undefined));
         console.error(err);
       } finally {
         setLoading(false);
@@ -115,10 +106,10 @@ export default function AdminPage() {
           setExamResults(resultsResponse.data);
         }
       } else {
-        setError('選考セッションの実行に失敗しました');
+        setError(toUiErrorMessage(response.message, '選考セッションの実行に失敗しました'));
       }
     } catch (err) {
-      setError('選考セッションの実行中にエラーが発生しました');
+      setError(toUiErrorMessage(err instanceof Error ? err.message : undefined, '選考セッションの実行中にエラーが発生しました'));
       console.error(err);
     } finally {
       setRunningSession(null);
@@ -136,10 +127,10 @@ export default function AdminPage() {
           setSessions(sessionsResponse.data);
         }
       } else {
-        setError('新規セッションの作成に失敗しました');
+        setError(toUiErrorMessage(response.message, '新規セッションの作成に失敗しました'));
       }
     } catch (err) {
-      setError('新規セッションの作成中にエラーが発生しました');
+      setError(toUiErrorMessage(err instanceof Error ? err.message : undefined, '新規セッションの作成中にエラーが発生しました'));
       console.error(err);
     }
   };

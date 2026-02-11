@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/Card';
 import { fetchData } from '@/lib/api';
+import { toUiErrorMessage } from '@/lib/client-utils';
 import { School } from '@/lib/types';
 import SchoolsList from '@/components/schools/SchoolsList';
 
@@ -26,7 +27,7 @@ export default function SchoolsPage() {
           setSchools(schoolsResponse.data);
         }
       } catch (err) {
-        setError('データの取得中にエラーが発生しました');
+        setError(toUiErrorMessage(err instanceof Error ? err.message : undefined));
         console.error(err);
       } finally {
         setLoading(false);

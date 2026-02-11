@@ -91,6 +91,23 @@ pnpm dev
 
 ブラウザで[http://localhost:3000](http://localhost:3000)を開くとアプリケーションにアクセスできます。
 
+## テスト
+
+このリポジトリでは、依存関係を増やさずに実行できるスモークテストを用意しています。
+
+```bash
+# APIスモークテスト
+pnpm run test:api
+
+# 主要画面のE2Eスモークテスト
+pnpm run test:e2e
+
+# CI向け一括実行
+pnpm run test:ci
+```
+
+`test:api` / `test:e2e` は内部で開発サーバーを起動し、主要導線を検証します。
+
 ## プロジェクト構造
 
 ```

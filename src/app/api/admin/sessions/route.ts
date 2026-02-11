@@ -1,5 +1,6 @@
-import { NextResponse } from 'next/server';
 import { query } from '@/lib/db';
+import { created, fail, ok } from '@/lib/api-response';
+import { toSelectionSessionDto } from '@/lib/dto';
 
 interface SessionRow {
   id: number | string;
@@ -44,28 +45,17 @@ export async function GET() {
         `, [sessionId]);
 
         return {
-          ...session,
+          ...toSelectionSessionDto(session),
           summary: summaryResult.rows[0],
           schools: schoolsResult.rows
         };
       })
     );
 
-    return NextResponse.json({
-      success: true,
-      data: sessionsWithSummary
-    });
+    return ok(sessionsWithSummary);
   } catch (error) {
-    console.error('Error fetching selection sessions:', error);
-
-    return NextResponse.json(
-      {
-        success: false,
-        message: 'Failed to fetch selection sessions',
-        error: error instanceof Error ? error.message : String(error)
-      },
-      { status: 500 }
-    );
+    console.error('[api/admin/sessions][GET] failed:', error);
+    return fail('Failed to fetch selection sessions', 500, error);
   }
 }
 
@@ -84,23 +74,11 @@ export async function POST() {
       RETURNING *
     `);
 
-    const session = result.rows[0];
+    const session = toSelectionSessionDto(result.rows[0] as Record<string, unknown>);
 
-    return NextResponse.json({
-      success: true,
-      data: session,
-      message: 'Selection session created successfully'
-    }, { status: 201 });
+    return created(session, 'Selection session created successfully');
   } catch (error) {
-    console.error('Error creating selection session:', error);
-
-    return NextResponse.json(
-      {
-        success: false,
-        message: 'Failed to create selection session',
-        error: error instanceof Error ? error.message : String(error)
-      },
-      { status: 500 }
-    );
+    console.error('[api/admin/sessions][POST] failed:', error);
+    return fail('Failed to create selection session', 500, error);
   }
 }

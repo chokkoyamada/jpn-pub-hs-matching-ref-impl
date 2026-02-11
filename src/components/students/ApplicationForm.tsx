@@ -3,6 +3,7 @@ import { Form, FormGroup, FormLabel, FormSelect, FormError } from '@/components/
 import { Button } from '@/components/ui/Button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/Card';
 import { fetchData, postData } from '@/lib/api';
+import { toUiErrorMessage } from '@/lib/client-utils';
 import { School, Application, ApplicationSubmission } from '@/lib/types';
 
 /**
@@ -57,7 +58,7 @@ const ApplicationForm: React.FC<ApplicationFormProps> = ({ studentId, onSuccess 
           setNewApplications(formattedApplications);
         }
       } catch (err) {
-        setError('データの取得中にエラーが発生しました');
+        setError(toUiErrorMessage(err instanceof Error ? err.message : undefined));
         console.error(err);
       } finally {
         setLoading(false);
@@ -170,10 +171,10 @@ const ApplicationForm: React.FC<ApplicationFormProps> = ({ studentId, onSuccess 
           onSuccess();
         }
       } else {
-        setError(response.message || '応募情報の保存に失敗しました');
+        setError(toUiErrorMessage(response.message, '応募情報の保存に失敗しました'));
       }
     } catch (err) {
-      setError('応募情報の送信中にエラーが発生しました');
+      setError(toUiErrorMessage(err instanceof Error ? err.message : undefined, '応募情報の送信中にエラーが発生しました'));
       console.error(err);
     } finally {
       setLoading(false);

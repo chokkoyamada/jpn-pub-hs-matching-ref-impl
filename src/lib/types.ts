@@ -1,28 +1,37 @@
 /**
- * アプリケーションで使用する型定義
+ * アプリケーションで使用する共有型定義
  */
 
+export interface ApiResponse<T> {
+  success: boolean;
+  data?: T;
+  message?: string;
+  error?: string;
+}
+
 /**
- * 学生の型定義
+ * 学生のAPI DTO
+ * DBスキーマと後方互換の両方を考慮して optional を許容する
  */
 export interface Student {
   id: number;
   name: string;
+  contact_info?: string | null;
   address?: string;
   phone?: string;
   email?: string;
-  created_at: string;
+  created_at?: string;
 }
 
 /**
- * 高校の型定義
+ * 高校のAPI DTO
  */
 export interface School {
   id: number;
   name: string;
-  location: string;
+  location?: string | null;
   capacity: number;
-  created_at: string;
+  created_at?: string;
 }
 
 /**
@@ -108,4 +117,10 @@ export interface MatchingResult {
   schools: SchoolMatchResult[];
   totalMatches: number;
   totalStudents: number;
+}
+
+export interface SessionSummary {
+  total_students: number;
+  matched_students: number;
+  average_score: number;
 }

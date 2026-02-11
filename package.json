@@ -6,7 +6,11 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "test": "pnpm run test:api && pnpm run test:e2e",
+    "test:api": "bash scripts/test-api.sh",
+    "test:e2e": "bash scripts/test-e2e.sh",
+    "test:ci": "pnpm lint && pnpm exec tsc --noEmit && pnpm run test:api && pnpm run test:e2e"
   },
   "dependencies": {
     "@libsql/client": "^0.17.0",

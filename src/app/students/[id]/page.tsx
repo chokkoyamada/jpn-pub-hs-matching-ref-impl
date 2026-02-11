@@ -5,6 +5,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 import { Button } from '@/components/ui/Button';
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/Table';
 import { fetchData } from '@/lib/api';
+import { getLatestCompletedSession, toUiErrorMessage } from '@/lib/client-utils';
 import { School, Application, ExamResult, SelectionSession } from '@/lib/types';
 import ApplicationForm from '@/components/students/ApplicationForm';
 
@@ -47,9 +48,8 @@ export default function StudentDetailPage({ params }: { params: Promise<{ id: st
         // マッチング結果を取得（最新の選考セッションから）
         const sessionsResponse = await fetchData<SelectionSession[]>('/admin/sessions');
         if (sessionsResponse.success && sessionsResponse.data) {
-          const completedSessions = sessionsResponse.data.filter((session) => session.status === 'completed');
-          if (completedSessions.length > 0) {
-            const latestSession = completedSessions[completedSessions.length - 1];
+          const latestSession = getLatestCompletedSession(sessionsResponse.data);
+          if (latestSession) {
             const resultsResponse = await fetchData<ExamResult[]>(`/students/${studentId}/results?session_id=${latestSession.id}`);
             if (resultsResponse.success && resultsResponse.data && resultsResponse.data.length > 0) {
               setExamResult(resultsResponse.data[0]);
@@ -57,7 +57,7 @@ export default function StudentDetailPage({ params }: { params: Promise<{ id: st
           }
         }
       } catch (err) {
-        setError('データの取得中にエラーが発生しました');
+        setError(toUiErrorMessage(err instanceof Error ? err.message : undefined));
         console.error(err);
       } finally {
         setLoading(false);

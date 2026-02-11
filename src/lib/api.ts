@@ -1,114 +1,81 @@
+import type { ApiResponse } from '@/lib/types';
+
 /**
  * API通信用のユーティリティ関数
  */
-
-/**
- * APIリクエストの基本設定
- */
 const API_BASE_URL = '/api';
 
-/**
- * APIレスポンスの型定義
- */
-export interface ApiResponse<T> {
-  success: boolean;
-  data?: T;
-  message?: string;
-  error?: string;
+async function parseApiResponse<T>(response: Response): Promise<ApiResponse<T>> {
+  let payload: unknown;
+  try {
+    payload = await response.json();
+  } catch {
+    payload = null;
+  }
+
+  if (typeof payload === 'object' && payload !== null) {
+    const typed = payload as ApiResponse<T>;
+    if (response.ok) {
+      return typed;
+    }
+
+    return {
+      success: false,
+      message: typed.message || `HTTP ${response.status} エラーが発生しました`,
+      error: typed.error || typed.message || `HTTP ${response.status}`,
+    };
+  }
+
+  if (!response.ok) {
+    return {
+      success: false,
+      message: `HTTP ${response.status} エラーが発生しました`,
+      error: `HTTP ${response.status}`,
+    };
+  }
+
+  return {
+    success: false,
+    message: 'APIレスポンスの形式が不正です',
+    error: 'Invalid response format',
+  };
 }
 
-/**
- * GETリクエストを送信する関数
- * @param endpoint APIエンドポイント
- * @returns レスポンスデータ
- */
+export async function requestJson<T, U = unknown>(
+  method: 'GET' | 'POST' | 'PUT' | 'DELETE',
+  endpoint: string,
+  body?: U
+): Promise<ApiResponse<T>> {
+  try {
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+      method,
+      headers: body === undefined ? undefined : { 'Content-Type': 'application/json' },
+      body: body === undefined ? undefined : JSON.stringify(body),
+    });
+
+    return await parseApiResponse<T>(response);
+  } catch (error) {
+    console.error(`[api:${method}] ${endpoint}`, error);
+    return {
+      success: false,
+      message: '通信に失敗しました。ネットワーク状態をご確認ください。',
+      error: error instanceof Error ? error.message : String(error),
+    };
+  }
+}
+
 export async function fetchData<T>(endpoint: string): Promise<ApiResponse<T>> {
-  try {
-    const response = await fetch(`${API_BASE_URL}${endpoint}`);
-    const data = await response.json();
-    return data as ApiResponse<T>;
-  } catch (error) {
-    console.error('API fetch error:', error);
-    return {
-      success: false,
-      message: 'APIリクエストに失敗しました',
-      error: error instanceof Error ? error.message : String(error)
-    };
-  }
+  return requestJson<T>('GET', endpoint);
 }
 
-/**
- * POSTリクエストを送信する関数
- * @param endpoint APIエンドポイント
- * @param body リクエストボディ
- * @returns レスポンスデータ
- */
-export async function postData<T, U = unknown>(endpoint: string, body: U): Promise<ApiResponse<T>> {
-  try {
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(body)
-    });
-    const data = await response.json();
-    return data as ApiResponse<T>;
-  } catch (error) {
-    console.error('API post error:', error);
-    return {
-      success: false,
-      message: 'APIリクエストに失敗しました',
-      error: error instanceof Error ? error.message : String(error)
-    };
-  }
-}
-
-/**
- * PUTリクエストを送信する関数
- * @param endpoint APIエンドポイント
- * @param body リクエストボディ
- * @returns レスポンスデータ
- */
 export async function putData<T, U = unknown>(endpoint: string, body: U): Promise<ApiResponse<T>> {
-  try {
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(body)
-    });
-    const data = await response.json();
-    return data as ApiResponse<T>;
-  } catch (error) {
-    console.error('API put error:', error);
-    return {
-      success: false,
-      message: 'APIリクエストに失敗しました',
-      error: error instanceof Error ? error.message : String(error)
-    };
-  }
+  return requestJson<T, U>('PUT', endpoint, body);
 }
 
-/**
- * DELETEリクエストを送信する関数
- * @param endpoint APIエンドポイント
- * @returns レスポンスデータ
- */
 export async function deleteData<T>(endpoint: string): Promise<ApiResponse<T>> {
-  try {
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-      method: 'DELETE'
-    });
-    const data = await response.json();
-    return data as ApiResponse<T>;
-  } catch (error) {
-    console.error('API delete error:', error);
-    return {
-      success: false,
-      message: 'APIリクエストに失敗しました',
-      error: error instanceof Error ? error.message : String(error)
-    };
-  }
+  return requestJson<T>('DELETE', endpoint);
+}
+
+export async function postData<T, U = unknown>(endpoint: string, body: U): Promise<ApiResponse<T>> {
+  return requestJson<T, U>('POST', endpoint, body);
 }
