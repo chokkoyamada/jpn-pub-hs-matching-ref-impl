@@ -84,9 +84,10 @@ export default function StudentDetailPage({ params }: { params: Promise<{ id: st
 
   return (
     <div className="flex flex-col gap-8">
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">学生詳細</h1>
-      </div>
+      <section className="surface-card px-6 py-6 md:px-8">
+        <h1 className="text-3xl font-bold text-slate-900">学生詳細</h1>
+        <p className="mt-2 text-slate-600">応募状況とマッチング結果を確認し、希望校を編集できます。</p>
+      </section>
 
       {showApplicationForm ? (
         <ApplicationForm
@@ -109,9 +110,9 @@ export default function StudentDetailPage({ params }: { params: Promise<{ id: st
                 <p>{error}</p>
               </div>
             ) : applications.length === 0 ? (
-              <div className="p-6 text-center bg-gray-50 rounded-lg">
-                <p className="text-gray-500">応募情報がありません</p>
-                <p className="text-sm text-gray-400 mt-2">「応募情報を編集」ボタンから応募を開始してください</p>
+              <div className="rounded-xl border border-slate-200 bg-slate-50 p-6 text-center">
+                <p className="text-slate-600">応募情報がありません</p>
+                <p className="mt-2 text-sm text-slate-500">「応募情報を編集」ボタンから応募を開始してください</p>
               </div>
             ) : (
               <Table>
@@ -133,7 +134,7 @@ export default function StudentDetailPage({ params }: { params: Promise<{ id: st
                         <TableCell>{app.school_name || (school ? school.name : '-')}</TableCell>
                         <TableCell>{app.school_location || (school ? school.location : '-')}</TableCell>
                         <TableCell>{school ? school.capacity : '-'}</TableCell>
-                        <TableCell>応募済み</TableCell>
+                        <TableCell><span className="status-chip status-chip-success">応募済み</span></TableCell>
                       </TableRow>
                     );
                   })}
@@ -160,8 +161,8 @@ export default function StudentDetailPage({ params }: { params: Promise<{ id: st
               <p>読み込み中...</p>
             </div>
           ) : examResult ? (
-            <div className="p-6 bg-blue-50 rounded-lg">
-              <h3 className="text-xl font-semibold text-blue-800 mb-2">
+            <div className="rounded-xl border border-blue-100 bg-blue-50 p-6">
+              <h3 className="mb-2 text-xl font-semibold text-blue-900">
                 {examResult.matched_school_id ? (
                   <>
                     合格: {examResult.school_name || schools.find(s => s.id === examResult.matched_school_id)?.name || '不明な高校'}
@@ -170,14 +171,14 @@ export default function StudentDetailPage({ params }: { params: Promise<{ id: st
                   <>不合格</>
                 )}
               </h3>
-              <p className="text-blue-600">
+              <p className="text-blue-700">
                 あなたの成績: {examResult.score}点
               </p>
             </div>
           ) : (
-            <div className="p-6 text-center bg-gray-50 rounded-lg">
-              <p className="text-gray-500 mb-2">マッチング結果はまだ公開されていません</p>
-              <p className="text-sm text-gray-400">結果は選考セッション終了後に公開されます</p>
+            <div className="rounded-xl border border-slate-200 bg-slate-50 p-6 text-center">
+              <p className="mb-2 text-slate-600">マッチング結果はまだ公開されていません</p>
+              <p className="text-sm text-slate-500">結果は選考セッション終了後に公開されます</p>
             </div>
           )}
         </CardContent>

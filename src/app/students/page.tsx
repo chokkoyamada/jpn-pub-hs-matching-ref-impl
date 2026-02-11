@@ -76,9 +76,12 @@ export default function StudentsPage() {
 
   return (
     <div className="flex flex-col gap-8">
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">学生一覧</h1>
-      </div>
+      <section className="surface-card px-6 py-6 md:px-8">
+        <h1 className="text-3xl font-bold text-slate-900">学生一覧</h1>
+        <p className="mt-2 text-slate-600">
+          志望登録とマッチング結果の確認対象となる学生を一覧で表示します。
+        </p>
+      </section>
 
       <Card>
         <CardHeader>

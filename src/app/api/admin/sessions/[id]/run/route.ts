@@ -120,7 +120,7 @@ export async function POST(
     }));
 
     const schools: School[] = schoolsResult.rows.map((row) => {
-      const school = row as SchoolRow;
+      const school = row as unknown as SchoolRow;
       const id = Number(school.id);
       const capacity = Number(school.capacity);
 

@@ -38,9 +38,12 @@ export default function SchoolsPage() {
 
   return (
     <div className="flex flex-col gap-8">
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">高校一覧</h1>
-      </div>
+      <section className="surface-card px-6 py-6 md:px-8">
+        <h1 className="text-3xl font-bold text-slate-900">高校一覧</h1>
+        <p className="mt-2 text-slate-600">
+          各高校の定員・所在地を確認し、応募先として比較できます。
+        </p>
+      </section>
 
       <Card>
         <CardHeader>

@@ -76,9 +76,10 @@ export default function SchoolDetailPage({ params }: { params: Promise<{ id: str
 
   return (
     <div className="flex flex-col gap-8">
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">高校詳細</h1>
-      </div>
+      <section className="surface-card px-6 py-6 md:px-8">
+        <h1 className="text-3xl font-bold text-slate-900">高校詳細</h1>
+        <p className="mt-2 text-slate-600">応募状況とマッチング結果を確認し、学校情報を管理します。</p>
+      </section>
 
       <Card>
         <CardHeader>
@@ -184,9 +185,9 @@ export default function SchoolDetailPage({ params }: { params: Promise<{ id: str
               </div>
             )
           ) : (
-            <div className="p-6 text-center bg-gray-50 rounded-lg">
-              <p className="text-gray-500">高校情報がありません</p>
-            </div>
+              <div className="rounded-xl border border-slate-200 bg-slate-50 p-6 text-center">
+                <p className="text-slate-600">高校情報がありません</p>
+              </div>
           )}
         </CardContent>
         <CardFooter>
@@ -229,17 +230,17 @@ export default function SchoolDetailPage({ params }: { params: Promise<{ id: str
           ) : (
             <>
               <div className="flex flex-col md:flex-row gap-6 mb-6">
-                <div className="bg-blue-50 p-4 rounded-lg flex-1 text-center">
+                <div className="rounded-xl border border-blue-100 bg-blue-50 p-4 text-center">
                   <p className="text-3xl font-bold text-blue-600">{applications.length}</p>
-                  <p className="text-sm text-gray-500">応募者数</p>
+                  <p className="text-sm text-slate-600">応募者数</p>
                 </div>
-                <div className="bg-green-50 p-4 rounded-lg flex-1 text-center">
+                <div className="rounded-xl border border-green-100 bg-green-50 p-4 text-center">
                   <p className="text-3xl font-bold text-green-600">{school?.capacity || '-'}</p>
-                  <p className="text-sm text-gray-500">定員</p>
+                  <p className="text-sm text-slate-600">定員</p>
                 </div>
-                <div className="bg-purple-50 p-4 rounded-lg flex-1 text-center">
-                  <p className="text-3xl font-bold text-purple-600">{firstChoiceCount}</p>
-                  <p className="text-sm text-gray-500">第一希望者数</p>
+                <div className="rounded-xl border border-teal-100 bg-teal-50 p-4 text-center">
+                  <p className="text-3xl font-bold text-teal-700">{firstChoiceCount}</p>
+                  <p className="text-sm text-slate-600">第一希望者数</p>
                 </div>
               </div>
 
@@ -264,7 +265,11 @@ export default function SchoolDetailPage({ params }: { params: Promise<{ id: str
                         <TableCell>{result ? `${result.score}点` : '未公開'}</TableCell>
                         <TableCell>
                           {result ? (
-                            result.matched_school_id === schoolId ? '合格' : '不合格'
+                            result.matched_school_id === schoolId ? (
+                              <span className="status-chip status-chip-success">合格</span>
+                            ) : (
+                              <span className="status-chip status-chip-danger">不合格</span>
+                            )
                           ) : '未決定'}
                         </TableCell>
                       </TableRow>
@@ -288,20 +293,20 @@ export default function SchoolDetailPage({ params }: { params: Promise<{ id: str
               <p>読み込み中...</p>
             </div>
           ) : matchResults.length > 0 ? (
-            <div className="p-6 bg-blue-50 rounded-lg">
-              <h3 className="text-xl font-semibold text-blue-800 mb-4">マッチング結果</h3>
-              <p className="text-blue-600 mb-2">
+            <div className="rounded-xl border border-blue-100 bg-blue-50 p-6">
+              <h3 className="mb-4 text-xl font-semibold text-blue-900">マッチング結果</h3>
+              <p className="mb-2 text-blue-700">
                 合格者数: {matchResults.filter(r => r.matched_school_id === schoolId).length} / {school?.capacity || '-'}
               </p>
-              <p className="text-blue-600">
+              <p className="text-blue-700">
                 平均点: {matchResults.filter(r => r.matched_school_id === schoolId).reduce((sum, r) => sum + r.score, 0) /
                   (matchResults.filter(r => r.matched_school_id === schoolId).length || 1)}点
               </p>
             </div>
           ) : (
-            <div className="p-6 text-center bg-gray-50 rounded-lg">
-              <p className="text-gray-500 mb-2">マッチング結果はまだ公開されていません</p>
-              <p className="text-sm text-gray-400">結果は選考セッション終了後に公開されます</p>
+            <div className="rounded-xl border border-slate-200 bg-slate-50 p-6 text-center">
+              <p className="mb-2 text-slate-600">マッチング結果はまだ公開されていません</p>
+              <p className="text-sm text-slate-500">結果は選考セッション終了後に公開されます</p>
             </div>
           )}
         </CardContent>

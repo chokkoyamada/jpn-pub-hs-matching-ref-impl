@@ -22,7 +22,7 @@ export async function GET() {
     // 各セッションの結果概要を取得
     const sessionsWithSummary = await Promise.all(
       result.rows.map(async (row) => {
-        const session = row as SessionRow;
+        const session = row as unknown as SessionRow;
         const sessionId = Number(session.id);
         // マッチング結果の概要を取得
         const summaryResult = await query(`

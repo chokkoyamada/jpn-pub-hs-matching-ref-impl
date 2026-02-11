@@ -76,9 +76,10 @@ export default function SessionDetailPage({ params }: { params: Promise<{ id: st
 
   return (
     <div className="flex flex-col gap-8">
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">選考セッション詳細</h1>
-      </div>
+      <section className="surface-card px-6 py-6 md:px-8">
+        <h1 className="text-3xl font-bold text-slate-900">選考セッション詳細</h1>
+        <p className="mt-2 text-slate-600">セッションの状態・統計・配属結果を確認します。</p>
+      </section>
 
       <Card>
         <CardHeader>
@@ -109,11 +110,11 @@ export default function SessionDetailPage({ params }: { params: Promise<{ id: st
                   <h3 className="text-sm font-medium text-gray-500">ステータス</h3>
                   <p className="mt-1">
                     {session.status === 'completed' ? (
-                      <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">
+                      <span className="status-chip status-chip-success">
                         完了
                       </span>
                     ) : (
-                      <span className="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs">
+                      <span className="status-chip status-chip-warning">
                         保留中
                       </span>
                     )}
@@ -127,13 +128,13 @@ export default function SessionDetailPage({ params }: { params: Promise<{ id: st
 
               {session.status === 'completed' && (
                 <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="bg-blue-50 p-4 rounded-lg">
+                  <div className="rounded-xl border border-blue-100 bg-blue-50 p-4">
                     <h3 className="font-medium text-blue-800">マッチング率</h3>
                     <p className="text-2xl font-bold text-blue-600">
                       {((matchedStudentsCount / students.length) * 100).toFixed(1)}%
                     </p>
                   </div>
-                  <div className="bg-green-50 p-4 rounded-lg">
+                  <div className="rounded-xl border border-green-100 bg-green-50 p-4">
                     <h3 className="font-medium text-green-800">平均スコア</h3>
                     <p className="text-2xl font-bold text-green-600">{averageScore.toFixed(1)}点</p>
                   </div>
@@ -141,8 +142,8 @@ export default function SessionDetailPage({ params }: { params: Promise<{ id: st
               )}
             </>
           ) : (
-            <div className="p-6 text-center bg-gray-50 rounded-lg">
-              <p className="text-gray-500">セッション情報がありません</p>
+            <div className="rounded-xl border border-slate-200 bg-slate-50 p-6 text-center">
+              <p className="text-slate-600">セッション情報がありません</p>
             </div>
           )}
         </CardContent>
@@ -186,11 +187,11 @@ export default function SessionDetailPage({ params }: { params: Promise<{ id: st
                       </TableCell>
                       <TableCell>
                         {matchedSchool ? (
-                          <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">
+                          <span className="status-chip status-chip-success">
                             合格
                           </span>
                         ) : (
-                          <span className="bg-red-100 text-red-800 px-2 py-1 rounded-full text-xs">
+                          <span className="status-chip status-chip-danger">
                             不合格
                           </span>
                         )}
@@ -201,10 +202,10 @@ export default function SessionDetailPage({ params }: { params: Promise<{ id: st
               </TableBody>
             </Table>
           ) : (
-            <div className="p-6 text-center bg-gray-50 rounded-lg">
-              <p className="text-gray-500 mb-2">マッチング結果はまだありません</p>
+            <div className="rounded-xl border border-slate-200 bg-slate-50 p-6 text-center">
+              <p className="mb-2 text-slate-600">マッチング結果はまだありません</p>
               {session?.status === 'pending' && (
-                <p className="text-sm text-gray-400">セッションを実行するとここに結果が表示されます</p>
+                <p className="text-sm text-slate-500">セッションを実行するとここに結果が表示されます</p>
               )}
             </div>
           )}

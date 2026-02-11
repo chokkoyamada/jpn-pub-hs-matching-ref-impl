@@ -193,14 +193,14 @@ const ApplicationForm: React.FC<ApplicationFormProps> = ({ studentId, onSuccess 
           )}
 
           {successMessage && (
-            <div className="mb-4 p-2 bg-green-50 text-green-700 rounded">
+            <div className="mb-4 rounded-lg border border-green-200 bg-green-50 p-3 text-green-700">
               {successMessage}
             </div>
           )}
 
           <div className="space-y-4">
             {newApplications.map((app, index) => (
-              <div key={index} className="flex items-end gap-4 p-4 border rounded bg-gray-50">
+              <div key={index} className="flex items-end gap-4 rounded-xl border border-slate-200 bg-slate-50/70 p-4">
                 <FormGroup className="flex-1">
                   <FormLabel htmlFor={`school-${index}`}>高校</FormLabel>
                   <FormSelect

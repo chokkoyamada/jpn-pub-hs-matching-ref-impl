@@ -152,9 +152,12 @@ export default function AdminPage() {
 
   return (
     <div className="flex flex-col gap-8">
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">教育委員会向けページ</h1>
-      </div>
+      <section className="surface-card px-6 py-6 md:px-8">
+        <h1 className="text-3xl font-bold text-slate-900">教育委員会向けページ</h1>
+        <p className="mt-2 text-slate-600">
+          選考セッションの実行、応募状況の監視、結果確認をこの画面で行います。
+        </p>
+      </section>
 
       <Card>
         <CardHeader>
@@ -173,17 +176,17 @@ export default function AdminPage() {
           ) : (
             <>
               <div className="flex flex-col md:flex-row gap-6 mb-6">
-                <div className="bg-blue-50 p-4 rounded-lg flex-1 text-center">
+                <div className="rounded-xl border border-blue-100 bg-blue-50 p-4 text-center">
                   <p className="text-3xl font-bold text-blue-600">{sessions.length}</p>
-                  <p className="text-sm text-gray-500">セッション数</p>
+                  <p className="text-sm text-slate-600">セッション数</p>
                 </div>
-                <div className="bg-green-50 p-4 rounded-lg flex-1 text-center">
+                <div className="rounded-xl border border-green-100 bg-green-50 p-4 text-center">
                   <p className="text-3xl font-bold text-green-600">{completedSessionsCount}</p>
-                  <p className="text-sm text-gray-500">完了セッション</p>
+                  <p className="text-sm text-slate-600">完了セッション</p>
                 </div>
-                <div className="bg-yellow-50 p-4 rounded-lg flex-1 text-center">
+                <div className="rounded-xl border border-amber-100 bg-amber-50 p-4 text-center">
                   <p className="text-3xl font-bold text-yellow-600">{pendingSessionsCount}</p>
-                  <p className="text-sm text-gray-500">保留中セッション</p>
+                  <p className="text-sm text-slate-600">保留中セッション</p>
                 </div>
               </div>
 
@@ -217,11 +220,11 @@ export default function AdminPage() {
                           <TableCell>{new Date(session.created_at).toLocaleString('ja-JP')}</TableCell>
                           <TableCell>
                             {session.status === 'completed' ? (
-                              <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">
+                              <span className="status-chip status-chip-success">
                                 完了
                               </span>
                             ) : (
-                              <span className="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs">
+                              <span className="status-chip status-chip-warning">
                                 保留中
                               </span>
                             )}
