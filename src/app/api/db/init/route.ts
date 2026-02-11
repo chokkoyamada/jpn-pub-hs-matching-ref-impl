@@ -1,5 +1,5 @@
-import { NextResponse } from 'next/server';
 import { initializeDatabase } from '@/lib/schema';
+import { fail, ok } from '@/lib/api-response';
 
 /**
  * データベース初期化APIエンドポイント
@@ -11,20 +11,9 @@ export async function GET() {
   try {
     await initializeDatabase();
 
-    return NextResponse.json({
-      success: true,
-      message: 'Database initialized successfully'
-    });
+    return ok({ initialized: true }, { status: 200 });
   } catch (error) {
-    console.error('Error initializing database:', error);
-
-    return NextResponse.json(
-      {
-        success: false,
-        message: 'Failed to initialize database',
-        error: error instanceof Error ? error.message : String(error)
-      },
-      { status: 500 }
-    );
+    console.error('[api/db/init][GET] failed:', error);
+    return fail('Failed to initialize database', 500, error);
   }
 }

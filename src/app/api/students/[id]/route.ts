@@ -1,5 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { query } from '@/lib/db';
+import { fail, ok } from '@/lib/api-response';
+import { toStudentDto } from '@/lib/dto';
 
 /**
  * 学生詳細取得API
@@ -18,13 +20,7 @@ export async function GET(
     const studentId = Number(id);
 
     if (isNaN(studentId)) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: 'Invalid student ID'
-        },
-        { status: 400 }
-      );
+      return fail('Invalid student ID', 400);
     }
 
     // 学生情報を取得
@@ -34,16 +30,10 @@ export async function GET(
     );
 
     if (studentResult.rows.length === 0) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: 'Student not found'
-        },
-        { status: 404 }
-      );
+      return fail('Student not found', 404);
     }
 
-    const student = studentResult.rows[0];
+    const student = toStudentDto(studentResult.rows[0] as Record<string, unknown>);
 
     // 学生の応募情報を取得
     const applicationsResult = await query(
@@ -70,25 +60,14 @@ export async function GET(
       [studentId]
     );
 
-    return NextResponse.json({
-      success: true,
-      data: {
-        student,
-        applications: applicationsResult.rows,
-        results: resultsResult.rows
-      }
+    return ok({
+      student,
+      applications: applicationsResult.rows,
+      results: resultsResult.rows
     });
   } catch (error) {
-    console.error(`Error fetching student with ID ${id}:`, error);
-
-    return NextResponse.json(
-      {
-        success: false,
-        message: 'Failed to fetch student details',
-        error: error instanceof Error ? error.message : String(error)
-      },
-      { status: 500 }
-    );
+    console.error(`[api/students/${id}][GET] failed:`, error);
+    return fail('Failed to fetch student details', 500, error);
   }
 }
 
@@ -108,26 +87,14 @@ export async function PUT(
     const studentId = Number(id);
 
     if (isNaN(studentId)) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: 'Invalid student ID'
-        },
-        { status: 400 }
-      );
+      return fail('Invalid student ID', 400);
     }
 
     const body = await request.json();
 
     // 更新するフィールドがあるか確認
     if (!body.name && body.contact_info === undefined) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: 'No fields to update'
-        },
-        { status: 400 }
-      );
+      return fail('No fields to update', 400);
     }
 
     // 学生が存在するか確認
@@ -137,13 +104,7 @@ export async function PUT(
     );
 
     if (checkResult.rows.length === 0) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: 'Student not found'
-        },
-        { status: 404 }
-      );
+      return fail('Student not found', 404);
     }
 
     // 更新するフィールドとパラメータを構築
@@ -174,22 +135,10 @@ export async function PUT(
       updateParams
     );
 
-    return NextResponse.json({
-      success: true,
-      data: result.rows[0],
-      message: 'Student updated successfully'
-    });
+    return ok(toStudentDto(result.rows[0] as Record<string, unknown>));
   } catch (error) {
-    console.error(`Error updating student with ID ${id}:`, error);
-
-    return NextResponse.json(
-      {
-        success: false,
-        message: 'Failed to update student',
-        error: error instanceof Error ? error.message : String(error)
-      },
-      { status: 500 }
-    );
+    console.error(`[api/students/${id}][PUT] failed:`, error);
+    return fail('Failed to update student', 500, error);
   }
 }
 
@@ -208,13 +157,7 @@ export async function DELETE(
     const studentId = Number(id);
 
     if (isNaN(studentId)) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: 'Invalid student ID'
-        },
-        { status: 400 }
-      );
+      return fail('Invalid student ID', 400);
     }
 
     // 学生が存在するか確認
@@ -224,13 +167,7 @@ export async function DELETE(
     );
 
     if (checkResult.rows.length === 0) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: 'Student not found'
-        },
-        { status: 404 }
-      );
+      return fail('Student not found', 404);
     }
 
     // 関連する応募情報を削除
@@ -251,20 +188,9 @@ export async function DELETE(
       [studentId]
     );
 
-    return NextResponse.json({
-      success: true,
-      message: 'Student deleted successfully'
-    });
+    return ok({ deleted: true });
   } catch (error) {
-    console.error(`Error deleting student with ID ${id}:`, error);
-
-    return NextResponse.json(
-      {
-        success: false,
-        message: 'Failed to delete student',
-        error: error instanceof Error ? error.message : String(error)
-      },
-      { status: 500 }
-    );
+    console.error(`[api/students/${id}][DELETE] failed:`, error);
+    return fail('Failed to delete student', 500, error);
   }
 }

@@ -1,5 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { query } from '@/lib/db';
+import { fail, ok } from '@/lib/api-response';
+import { toSchoolDto } from '@/lib/dto';
 
 /**
  * 高校詳細取得API
@@ -18,13 +20,7 @@ export async function GET(
     const schoolId = Number(id);
 
     if (isNaN(schoolId)) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: 'Invalid school ID'
-        },
-        { status: 400 }
-      );
+      return fail('Invalid school ID', 400);
     }
 
     // 高校情報を取得
@@ -34,16 +30,10 @@ export async function GET(
     );
 
     if (schoolResult.rows.length === 0) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: 'School not found'
-        },
-        { status: 404 }
-      );
+      return fail('School not found', 404);
     }
 
-    const school = schoolResult.rows[0];
+    const school = toSchoolDto(schoolResult.rows[0] as Record<string, unknown>);
 
     // 高校の応募者情報を取得
     const applicantsResult = await query(
@@ -70,25 +60,14 @@ export async function GET(
       [schoolId]
     );
 
-    return NextResponse.json({
-      success: true,
-      data: {
-        school,
-        applicants: applicantsResult.rows,
-        matchedStudents: matchedStudentsResult.rows
-      }
+    return ok({
+      school,
+      applicants: applicantsResult.rows,
+      matchedStudents: matchedStudentsResult.rows
     });
   } catch (error) {
-    console.error(`Error fetching school with ID ${id}:`, error);
-
-    return NextResponse.json(
-      {
-        success: false,
-        message: 'Failed to fetch school details',
-        error: error instanceof Error ? error.message : String(error)
-      },
-      { status: 500 }
-    );
+    console.error(`[api/schools/${id}][GET] failed:`, error);
+    return fail('Failed to fetch school details', 500, error);
   }
 }
 
@@ -108,37 +87,19 @@ export async function PUT(
     const schoolId = Number(id);
 
     if (isNaN(schoolId)) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: 'Invalid school ID'
-        },
-        { status: 400 }
-      );
+      return fail('Invalid school ID', 400);
     }
 
     const body = await request.json();
 
     // 更新するフィールドがあるか確認
     if (!body.name && body.location === undefined && body.capacity === undefined) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: 'No fields to update'
-        },
-        { status: 400 }
-      );
+      return fail('No fields to update', 400);
     }
 
     // 容量が正の数であることを確認
     if (body.capacity !== undefined && (typeof body.capacity !== 'number' || body.capacity <= 0)) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: 'Capacity must be a positive number'
-        },
-        { status: 400 }
-      );
+      return fail('Capacity must be a positive number', 400);
     }
 
     // 高校が存在するか確認
@@ -148,13 +109,7 @@ export async function PUT(
     );
 
     if (checkResult.rows.length === 0) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: 'School not found'
-        },
-        { status: 404 }
-      );
+      return fail('School not found', 404);
     }
 
     // 更新するフィールドとパラメータを構築
@@ -190,22 +145,10 @@ export async function PUT(
       updateParams
     );
 
-    return NextResponse.json({
-      success: true,
-      data: result.rows[0],
-      message: 'School updated successfully'
-    });
+    return ok(toSchoolDto(result.rows[0] as Record<string, unknown>));
   } catch (error) {
-    console.error(`Error updating school with ID ${id}:`, error);
-
-    return NextResponse.json(
-      {
-        success: false,
-        message: 'Failed to update school',
-        error: error instanceof Error ? error.message : String(error)
-      },
-      { status: 500 }
-    );
+    console.error(`[api/schools/${id}][PUT] failed:`, error);
+    return fail('Failed to update school', 500, error);
   }
 }
 
@@ -224,13 +167,7 @@ export async function DELETE(
     const schoolId = Number(id);
 
     if (isNaN(schoolId)) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: 'Invalid school ID'
-        },
-        { status: 400 }
-      );
+      return fail('Invalid school ID', 400);
     }
 
     // 高校が存在するか確認
@@ -240,13 +177,7 @@ export async function DELETE(
     );
 
     if (checkResult.rows.length === 0) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: 'School not found'
-        },
-        { status: 404 }
-      );
+      return fail('School not found', 404);
     }
 
     // 関連する応募情報を削除
@@ -271,20 +202,9 @@ export async function DELETE(
       [schoolId]
     );
 
-    return NextResponse.json({
-      success: true,
-      message: 'School deleted successfully'
-    });
+    return ok({ deleted: true });
   } catch (error) {
-    console.error(`Error deleting school with ID ${id}:`, error);
-
-    return NextResponse.json(
-      {
-        success: false,
-        message: 'Failed to delete school',
-        error: error instanceof Error ? error.message : String(error)
-      },
-      { status: 500 }
-    );
+    console.error(`[api/schools/${id}][DELETE] failed:`, error);
+    return fail('Failed to delete school', 500, error);
   }
 }

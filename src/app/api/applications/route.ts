@@ -1,5 +1,5 @@
-import { NextResponse } from 'next/server';
 import { query } from '@/lib/db';
+import { fail, ok } from '@/lib/api-response';
 
 /**
  * 応募情報一覧取得API
@@ -18,20 +18,9 @@ export async function GET() {
       ORDER BY a.student_id, a.preference_order ASC
     `);
 
-    return NextResponse.json({
-      success: true,
-      data: result.rows
-    });
+    return ok(result.rows);
   } catch (error) {
-    console.error('Error fetching applications:', error);
-
-    return NextResponse.json(
-      {
-        success: false,
-        message: 'Failed to fetch applications',
-        error: error instanceof Error ? error.message : String(error)
-      },
-      { status: 500 }
-    );
+    console.error('[api/applications][GET] failed:', error);
+    return fail('Failed to fetch applications', 500, error);
   }
 }

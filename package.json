@@ -8,8 +8,8 @@
     "start": "next start",
     "lint": "eslint .",
     "test": "pnpm run test:api && pnpm run test:e2e",
-    "test:api": "bash scripts/test-api.sh",
-    "test:e2e": "bash scripts/test-e2e.sh",
+    "test:api": "bash -lc 'set -a; source .env.local; set +a; vitest run --config vitest.config.mjs'",
+    "test:e2e": "playwright test --config=playwright.config.mjs",
     "test:ci": "pnpm lint && pnpm exec tsc --noEmit && pnpm run test:api && pnpm run test:e2e"
   },
   "dependencies": {
@@ -23,6 +23,7 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.3",
+    "@playwright/test": "^1.58.2",
     "@tailwindcss/postcss": "^4.1.18",
     "@types/node": "^25.2.3",
     "@types/react": "^19.2.13",
@@ -30,6 +31,7 @@
     "eslint": "^9.39.2",
     "eslint-config-next": "16.1.6",
     "tailwindcss": "^4.1.18",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.18"
   }
 }

@@ -1,11 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { query } from '@/lib/db';
+import { created, fail, ok } from '@/lib/api-response';
 
 /**
  * 学生の応募情報取得API
  * GET /api/students/[id]/applications
- *
- * 特定の学生の応募情報を取得する
  */
 type Params = { id: string };
 type ApplicationPayload = { school_id: number; preference_order: number };
@@ -19,32 +18,18 @@ export async function GET(
 
   try {
     if (isNaN(studentId)) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: 'Invalid student ID'
-        },
-        { status: 400 }
-      );
+      return fail('Invalid student ID', 400);
     }
 
-    // 学生が存在するか確認
     const studentResult = await query(
       `SELECT * FROM students WHERE id = ?`,
       [studentId]
     );
 
     if (studentResult.rows.length === 0) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: 'Student not found'
-        },
-        { status: 404 }
-      );
+      return fail('Student not found', 404);
     }
 
-    // 学生の応募情報を取得
     const applicationsResult = await query(
       `
       SELECT a.*, s.name as school_name, s.location as school_location
@@ -56,30 +41,16 @@ export async function GET(
       [studentId]
     );
 
-    return NextResponse.json({
-      success: true,
-      data: applicationsResult.rows
-    });
+    return ok(applicationsResult.rows);
   } catch (error) {
-    console.error(`Error fetching applications for student ID ${id}:`, error);
-
-    return NextResponse.json(
-      {
-        success: false,
-        message: 'Failed to fetch applications',
-        error: error instanceof Error ? error.message : String(error)
-      },
-      { status: 500 }
-    );
+    console.error(`[api/students/${id}/applications][GET] failed:`, error);
+    return fail('Failed to fetch applications', 500, error);
   }
 }
 
 /**
  * 学生の応募情報登録API
  * POST /api/students/[id]/applications
- *
- * 特定の学生の応募情報を登録する
- * リクエストボディ: { applications: Array<{ school_id: number, preference_order: number }> }
  */
 export async function POST(
   request: NextRequest,
@@ -90,91 +61,48 @@ export async function POST(
 
   try {
     if (isNaN(studentId)) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: 'Invalid student ID'
-        },
-        { status: 400 }
-      );
+      return fail('Invalid student ID', 400);
     }
 
     const body = await request.json();
+    const applications = body.applications as ApplicationPayload[] | undefined;
 
-    // バリデーション
-    if (!body.applications || !Array.isArray(body.applications) || body.applications.length === 0) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: 'Applications array is required'
-        },
-        { status: 400 }
-      );
+    if (!applications || !Array.isArray(applications) || applications.length === 0) {
+      return fail('Applications array is required', 400);
     }
 
-    if (body.applications.length > 5) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: 'Maximum 5 applications allowed'
-        },
-        { status: 400 }
-      );
+    if (applications.length > 5) {
+      return fail('Maximum 5 applications allowed', 400);
     }
 
-    // 学生が存在するか確認
     const studentResult = await query(
       `SELECT * FROM students WHERE id = ?`,
       [studentId]
     );
-
     if (studentResult.rows.length === 0) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: 'Student not found'
-        },
-        { status: 404 }
-      );
+      return fail('Student not found', 404);
     }
 
-    // 各応募の学校が存在するか確認
-    const schoolIds = (body.applications as ApplicationPayload[]).map((app) => app.school_id);
+    const schoolIds = applications.map((app) => app.school_id);
     const schoolsResult = await query(
       `SELECT id FROM schools WHERE id IN (${schoolIds.map(() => '?').join(', ')})`,
       schoolIds
     );
-
     if (schoolsResult.rows.length !== new Set(schoolIds).size) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: 'One or more schools not found'
-        },
-        { status: 400 }
-      );
+      return fail('One or more schools not found', 400);
     }
 
-    // 希望順位が重複していないか確認
-    const preferenceOrders = (body.applications as ApplicationPayload[]).map((app) => app.preference_order);
+    const preferenceOrders = applications.map((app) => app.preference_order);
     if (new Set(preferenceOrders).size !== preferenceOrders.length) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: 'Duplicate preference orders are not allowed'
-        },
-        { status: 400 }
-      );
+      return fail('Duplicate preference orders are not allowed', 400);
     }
 
-    // 既存の応募情報を削除
     await query(
       `DELETE FROM applications WHERE student_id = ?`,
       [studentId]
     );
 
-    // 新しい応募情報を登録
-    for (const app of body.applications) {
+    for (const app of applications) {
       await query(
         `
         INSERT INTO applications (student_id, school_id, preference_order)
@@ -184,7 +112,6 @@ export async function POST(
       );
     }
 
-    // 登録後の応募情報を取得
     const updatedApplicationsResult = await query(
       `
       SELECT a.*, s.name as school_name, s.location as school_location
@@ -196,30 +123,16 @@ export async function POST(
       [studentId]
     );
 
-    return NextResponse.json({
-      success: true,
-      data: updatedApplicationsResult.rows,
-      message: 'Applications submitted successfully'
-    }, { status: 201 });
+    return created(updatedApplicationsResult.rows, 'Applications submitted successfully');
   } catch (error) {
-    console.error(`Error submitting applications for student ID ${id}:`, error);
-
-    return NextResponse.json(
-      {
-        success: false,
-        message: 'Failed to submit applications',
-        error: error instanceof Error ? error.message : String(error)
-      },
-      { status: 500 }
-    );
+    console.error(`[api/students/${id}/applications][POST] failed:`, error);
+    return fail('Failed to submit applications', 500, error);
   }
 }
 
 /**
  * 学生の応募情報削除API
  * DELETE /api/students/[id]/applications
- *
- * 特定の学生の応募情報をすべて削除する
  */
 export async function DELETE(
   request: NextRequest,
@@ -230,51 +143,26 @@ export async function DELETE(
 
   try {
     if (isNaN(studentId)) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: 'Invalid student ID'
-        },
-        { status: 400 }
-      );
+      return fail('Invalid student ID', 400);
     }
 
-    // 学生が存在するか確認
     const studentResult = await query(
       `SELECT * FROM students WHERE id = ?`,
       [studentId]
     );
 
     if (studentResult.rows.length === 0) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: 'Student not found'
-        },
-        { status: 404 }
-      );
+      return fail('Student not found', 404);
     }
 
-    // 応募情報を削除
     await query(
       `DELETE FROM applications WHERE student_id = ?`,
       [studentId]
     );
 
-    return NextResponse.json({
-      success: true,
-      message: 'Applications deleted successfully'
-    });
+    return ok({ deleted: true });
   } catch (error) {
-    console.error(`Error deleting applications for student ID ${id}:`, error);
-
-    return NextResponse.json(
-      {
-        success: false,
-        message: 'Failed to delete applications',
-        error: error instanceof Error ? error.message : String(error)
-      },
-      { status: 500 }
-    );
+    console.error(`[api/students/${id}/applications][DELETE] failed:`, error);
+    return fail('Failed to delete applications', 500, error);
   }
 }

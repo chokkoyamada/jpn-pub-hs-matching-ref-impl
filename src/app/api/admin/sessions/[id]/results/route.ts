@@ -1,5 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { query } from '@/lib/db';
+import { fail, ok } from '@/lib/api-response';
 
 /**
  * 選考セッションの結果取得API
@@ -19,13 +20,7 @@ export async function GET(
   try {
 
     if (isNaN(sessionId)) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: 'Invalid session ID'
-        },
-        { status: 400 }
-      );
+      return fail('Invalid session ID', 400);
     }
 
     // セッションが存在するか確認
@@ -35,13 +30,7 @@ export async function GET(
     );
 
     if (sessionResult.rows.length === 0) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: 'Session not found'
-        },
-        { status: 404 }
-      );
+      return fail('Session not found', 404);
     }
 
     // 試験結果を取得
@@ -57,20 +46,9 @@ export async function GET(
       [sessionId]
     );
 
-    return NextResponse.json({
-      success: true,
-      data: resultsResult.rows
-    });
+    return ok(resultsResult.rows);
   } catch (error) {
-    console.error(`Error fetching results for session ID ${id}:`, error);
-
-    return NextResponse.json(
-      {
-        success: false,
-        message: 'Failed to fetch results',
-        error: error instanceof Error ? error.message : String(error)
-      },
-      { status: 500 }
-    );
+    console.error(`[api/admin/sessions/${id}/results][GET] failed:`, error);
+    return fail('Failed to fetch results', 500, error);
   }
 }

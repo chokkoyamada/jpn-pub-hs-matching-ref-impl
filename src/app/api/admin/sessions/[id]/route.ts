@@ -1,5 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { query } from '@/lib/db';
+import { fail, ok } from '@/lib/api-response';
+import { toSelectionSessionDto } from '@/lib/dto';
 
 /**
  * 選考セッション情報取得API
@@ -16,13 +18,7 @@ export async function GET(
     const sessionId = Number(id);
 
     if (isNaN(sessionId)) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: 'Invalid session ID'
-        },
-        { status: 400 }
-      );
+      return fail('Invalid session ID', 400);
     }
 
     // セッション情報を取得
@@ -32,16 +28,10 @@ export async function GET(
     );
 
     if (sessionResult.rows.length === 0) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: 'Session not found'
-        },
-        { status: 404 }
-      );
+      return fail('Session not found', 404);
     }
 
-    const session = sessionResult.rows[0];
+    const session = toSelectionSessionDto(sessionResult.rows[0] as Record<string, unknown>);
 
     // マッチング結果の概要を取得
     const summaryResult = await query(`
@@ -62,26 +52,15 @@ export async function GET(
       ORDER BY s.id ASC
     `, [sessionId]);
 
-    return NextResponse.json({
-      success: true,
-      data: {
-        session: {
-          ...session,
-          summary: summaryResult.rows[0],
-          schools: schoolsResult.rows
-        }
+    return ok({
+      session: {
+        ...session,
+        summary: summaryResult.rows[0],
+        schools: schoolsResult.rows
       }
     });
   } catch (error) {
-    console.error(`Error fetching session with ID ${id}:`, error);
-
-    return NextResponse.json(
-      {
-        success: false,
-        message: 'Failed to fetch session details',
-        error: error instanceof Error ? error.message : String(error)
-      },
-      { status: 500 }
-    );
+    console.error(`[api/admin/sessions/${id}][GET] failed:`, error);
+    return fail('Failed to fetch session details', 500, error);
   }
 }

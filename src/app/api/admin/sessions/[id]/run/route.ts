@@ -1,6 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { query } from '@/lib/db';
 import { runDAAlgorithm, generateRandomScores, Student, School } from '@/lib/matching/da-algorithm';
+import { fail, ok } from '@/lib/api-response';
+import { toSelectionSessionDto } from '@/lib/dto';
 
 interface SchoolRow {
   id: number | string;
@@ -23,13 +25,7 @@ export async function POST(
     const sessionId = Number(id);
 
     if (isNaN(sessionId)) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: 'Invalid session ID'
-        },
-        { status: 400 }
-      );
+      return fail('Invalid session ID', 400);
     }
 
     // セッションが存在するか確認
@@ -39,25 +35,14 @@ export async function POST(
     );
 
     if (sessionResult.rows.length === 0) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: 'Session not found'
-        },
-        { status: 404 }
-      );
+      return fail('Session not found', 404);
     }
 
     // セッションのステータスを確認
-    const session = sessionResult.rows[0];
+    const sessionRow = sessionResult.rows[0] as Record<string, unknown>;
+    const session = toSelectionSessionDto(sessionRow);
     if (session.status === 'completed') {
-      return NextResponse.json(
-        {
-          success: false,
-          message: 'Session already completed'
-        },
-        { status: 400 }
-      );
+      return fail('Session already completed', 400);
     }
 
     // 既存の結果があれば削除
@@ -78,13 +63,7 @@ export async function POST(
 
     // 応募がない場合はエラー
     if (applicationsResult.rows.length === 0) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: 'No applications found'
-        },
-        { status: 400 }
-      );
+      return fail('No applications found', 400);
     }
 
     // 学生ごとの希望校リストを作成
@@ -188,30 +167,18 @@ export async function POST(
       ORDER BY s.id ASC
     `, [sessionId]);
 
-    return NextResponse.json({
-      success: true,
-      data: {
-        session: {
-          ...session,
-          status: 'completed'
-        },
-        summary: summaryResult.rows[0],
-        schools: schoolsMatchResult.rows,
-        totalMatches: matchResults.filter(r => r.schoolId !== null).length,
-        totalStudents: students.length
+    return ok({
+      session: {
+        ...session,
+        status: 'completed'
       },
-      message: 'Matching completed successfully'
+      summary: summaryResult.rows[0],
+      schools: schoolsMatchResult.rows,
+      totalMatches: matchResults.filter(r => r.schoolId !== null).length,
+      totalStudents: students.length
     });
   } catch (error) {
-    console.error(`Error running matching for session ID ${id}:`, error);
-
-    return NextResponse.json(
-      {
-        success: false,
-        message: 'Failed to run matching',
-        error: error instanceof Error ? error.message : String(error)
-      },
-      { status: 500 }
-    );
+    console.error(`[api/admin/sessions/${id}/run][POST] failed:`, error);
+    return fail('Failed to run matching', 500, error);
   }
 }

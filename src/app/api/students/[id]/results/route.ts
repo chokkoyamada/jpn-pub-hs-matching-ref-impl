@@ -1,5 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { query } from '@/lib/db';
+import { fail, ok } from '@/lib/api-response';
 
 /**
  * 学生の試験結果取得API
@@ -22,13 +23,7 @@ export async function GET(
   try {
 
     if (isNaN(studentId)) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: 'Invalid student ID'
-        },
-        { status: 400 }
-      );
+      return fail('Invalid student ID', 400);
     }
 
     // 学生が存在するか確認
@@ -38,13 +33,7 @@ export async function GET(
     );
 
     if (studentResult.rows.length === 0) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: 'Student not found'
-        },
-        { status: 404 }
-      );
+      return fail('Student not found', 404);
     }
 
     // 試験結果を取得
@@ -66,20 +55,9 @@ export async function GET(
 
     const resultsResult = await query(resultsQuery, queryParams);
 
-    return NextResponse.json({
-      success: true,
-      data: resultsResult.rows
-    });
+    return ok(resultsResult.rows);
   } catch (error) {
-    console.error(`Error fetching results for student ID ${id}:`, error);
-
-    return NextResponse.json(
-      {
-        success: false,
-        message: 'Failed to fetch results',
-        error: error instanceof Error ? error.message : String(error)
-      },
-      { status: 500 }
-    );
+    console.error(`[api/students/${id}/results][GET] failed:`, error);
+    return fail('Failed to fetch results', 500, error);
   }
 }

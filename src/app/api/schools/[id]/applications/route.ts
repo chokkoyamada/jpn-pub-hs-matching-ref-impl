@@ -1,5 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { query } from '@/lib/db';
+import { fail, ok } from '@/lib/api-response';
 
 /**
  * 高校の応募情報取得API
@@ -19,13 +20,7 @@ export async function GET(
   try {
 
     if (isNaN(schoolId)) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: 'Invalid school ID'
-        },
-        { status: 400 }
-      );
+      return fail('Invalid school ID', 400);
     }
 
     // 高校が存在するか確認
@@ -35,13 +30,7 @@ export async function GET(
     );
 
     if (schoolResult.rows.length === 0) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: 'School not found'
-        },
-        { status: 404 }
-      );
+      return fail('School not found', 404);
     }
 
     // 応募情報を取得
@@ -54,20 +43,9 @@ export async function GET(
       [schoolId]
     );
 
-    return NextResponse.json({
-      success: true,
-      data: applicationsResult.rows
-    });
+    return ok(applicationsResult.rows);
   } catch (error) {
-    console.error(`Error fetching applications for school ID ${id}:`, error);
-
-    return NextResponse.json(
-      {
-        success: false,
-        message: 'Failed to fetch applications',
-        error: error instanceof Error ? error.message : String(error)
-      },
-      { status: 500 }
-    );
+    console.error(`[api/schools/${id}/applications][GET] failed:`, error);
+    return fail('Failed to fetch applications', 500, error);
   }
 }
