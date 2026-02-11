@@ -52,7 +52,7 @@ pnpm install
 
 # 環境変数の設定
 cp .env.example .env.local
-# .env.localファイルを編集してTursoのデータベース接続情報を設定
+# .env.localを編集してTurso接続情報を設定
 ```
 
 ### データベースのセットアップ
@@ -69,8 +69,8 @@ turso db tokens create jpn-hs-matching
 3. 取得したトークンと接続URLを`.env.local`ファイルに設定
 
 ```
-TURSO_DB_URL=your-db-url
-TURSO_DB_AUTH_TOKEN=your-auth-token
+TURSO_DATABASE_URL=your-db-url
+TURSO_AUTH_TOKEN=your-auth-token
 ```
 
 4. 初期データをロード
@@ -80,7 +80,7 @@ TURSO_DB_AUTH_TOKEN=your-auth-token
 pnpm dev
 
 # 別のターミナルで初期化APIを実行
-curl -X POST http://localhost:3000/api/db/init
+curl http://localhost:3000/api/db/init
 ```
 
 ### 開発サーバーの起動
