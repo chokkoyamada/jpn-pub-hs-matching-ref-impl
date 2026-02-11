@@ -37,7 +37,7 @@ const Header = () => {
               <li>
                 <Link
                   href="/admin"
-                  className="cursor-pointer rounded-lg bg-blue-600 px-2 py-1.5 text-sm font-semibold text-white transition-colors duration-200 hover:bg-blue-700 md:px-3"
+                  className="cursor-pointer rounded-lg bg-blue-600 px-2 py-1.5 text-sm font-semibold text-white transition-colors duration-200 hover:bg-blue-700 hover:text-white focus-visible:text-white visited:text-white md:px-3"
                 >
                   教育委員会
                 </Link>
